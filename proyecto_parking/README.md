@@ -23,6 +23,14 @@ proyecto_parking/
 > Treball en curs: fins ara només s'ha completat el **Sprint 1 (anàlisi i disseny)**.
 > Cap codi de l'aplicació no s'ha creat encara. Es desenvolupa des de zero sense.
 
+---
+
+## Implementació web (React + Firebase + Geoapify)
+
+La versió operativa de l'aplicació viu a [`../app/`](../app/) i es pot executar amb
+`npm install && npm run dev`. Veure [`../app/README.md`](../app/README.md) per a la
+documentació completa (estructura MVC, seed de Firestore, regles de seguretat…).
+
 ## Documents del Sprint 1
 
 A la carpeta `sprint1/`:

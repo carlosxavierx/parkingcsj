@@ -1,0 +1,631 @@
+/* ---------- Página de exploración ---------- */
+.explore-page { padding-bottom: 3rem; }
+
+.explore-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  padding: 2.4rem 0 1.6rem;
+}
+.explore-head h1 { margin-bottom: 0.3rem; }
+.explore-badges { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+
+.explore-layout {
+  display: grid;
+  grid-template-columns: minmax(330px, 400px) 1fr;
+  gap: 1.4rem;
+  align-items: start;
+}
+
+/* ---------- Rail de parkings ---------- */
+.parking-rail {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - var(--header-h) - 3rem);
+  position: sticky;
+  top: calc(var(--header-h) + 1.2rem);
+}
+
+.rail-head {
+  padding: 1.15rem 1.2rem 0.7rem;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+.rail-head h2 { font-size: 1.1rem; margin-bottom: 0.15rem; }
+.rail-subtitle { font-size: 0.82rem; color: var(--muted); margin: 0; }
+
+.rail-position {
+  margin: 0;
+  padding: 0 1.2rem;
+  font-size: 0.78rem;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.rail-position::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--success);
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.18);
+}
+
+.rail-toolbar {
+  padding: 0.75rem 1.2rem;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface-2);
+}
+
+.sort-group {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.sort-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: 999px;
+  padding: 0.32rem 0.8rem;
+  font-size: 0.79rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: 0.18s;
+}
+.sort-chip:hover { border-color: var(--primary); color: var(--primary); }
+.sort-chip.active {
+  background: var(--navy);
+  border-color: var(--navy);
+  color: #fff;
+}
+
+.rail-scroll {
+  overflow-y: auto;
+  padding: 1rem 1.1rem 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  scrollbar-width: thin;
+}
+.rail-scroll::-webkit-scrollbar { width: 8px; }
+.rail-scroll::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 8px;
+}
+
+/* ---------- Tarjeta de parking ---------- */
+.parking-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: 0.95rem 1rem;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.parking-card:hover {
+  border-color: #bfdbfe;
+  box-shadow: 0 10px 26px rgba(37, 99, 235, 0.12);
+  transform: translateY(-2px);
+}
+.parking-card.is-selected {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.16);
+}
+
+.parking-card-top {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.rank-badge {
+  background: linear-gradient(140deg, var(--accent), #d97706);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  border-radius: 8px;
+  padding: 0.25rem 0.45rem;
+  min-width: 34px;
+  text-align: center;
+}
+
+.parking-card-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+.parking-card-heading h3 {
+  font-size: 0.98rem;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.type-pill {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  padding: 0.14rem 0.5rem;
+  border-radius: 999px;
+}
+
+.source-pill {
+  margin-left: auto;
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  background: #dcfce7;
+  color: #166534;
+  white-space: nowrap;
+}
+.source-pill.geoapify { background: #e2e8f0; color: #475569; }
+
+.parking-card-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+.meta-item.distance { color: var(--primary); }
+
+.parking-card-address {
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin: 0;
+}
+
+.parking-card-facts {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+}
+
+.fact {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+.fact.price strong { color: var(--success); font-weight: 700; }
+.fact.spots.low { color: var(--warning); font-weight: 700; }
+.badge-amenity {
+  background: var(--primary-50);
+  color: var(--primary);
+  border-radius: 6px;
+  padding: 0.16rem 0.35rem;
+}
+
+.amenity-chips {
+  list-style: none;
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 0;
+}
+.amenity-chips li {
+  font-size: 0.7rem;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  padding: 0.16rem 0.5rem;
+  border-radius: 999px;
+}
+
+.parking-card-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+.parking-card-actions .btn { flex: 1; }
+
+/* ---------- Mapa ---------- */
+.parking-map {
+  position: relative;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  height: calc(100vh - var(--header-h) - 3rem);
+  min-height: 520px;
+  position: sticky;
+  top: calc(var(--header-h) + 1.2rem);
+}
+
+.map-container {
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.leaflet-container { font-family: var(--font); background: #e8eef5; }
+
+.parking-marker-wrap { background: none; border: none; }
+
+.parking-marker {
+  width: 34px;
+  height: 34px;
+  border-radius: 50% 50% 50% 6px;
+  background: var(--marker-color, var(--primary));
+  transform: rotate(45deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.3);
+  border: 2px solid #fff;
+  transition: transform 0.2s;
+}
+.parking-marker span {
+  transform: rotate(-45deg);
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.85rem;
+}
+.parking-marker.is-selected {
+  transform: rotate(45deg) scale(1.18);
+  background: var(--accent);
+}
+
+.user-marker {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--primary);
+  border: 3px solid #fff;
+  box-shadow: 0 0 0 6px rgba(37, 99, 235, 0.25);
+}
+.user-marker span {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.map-legend {
+  position: absolute;
+  left: 14px;
+  bottom: 14px;
+  z-index: 500;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 0.5rem 0.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  box-shadow: var(--shadow-sm);
+}
+
+.map-detail {
+  position: absolute;
+  right: 14px;
+  top: 14px;
+  z-index: 500;
+  width: min(330px, calc(100% - 28px));
+  background: rgba(255, 255, 255, 0.97);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1rem 1.05rem;
+  box-shadow: var(--shadow);
+  animation: slide-in 0.25s ease;
+}
+
+@keyframes slide-in {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.map-detail-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+.map-detail-head h3 { font-size: 1rem; margin-bottom: 0.25rem; }
+.map-detail-address { font-size: 0.83rem; color: var(--muted); margin: 0.5rem 0; }
+
+.map-detail-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.6rem;
+}
+.map-detail-facts span {
+  font-size: 0.74rem;
+  font-weight: 600;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  color: var(--ink-soft);
+}
+
+.map-detail-description { font-size: 0.83rem; color: var(--ink-soft); }
+
+.map-detail-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.6rem;
+}
+.map-detail-actions .btn { flex: 1; }
+
+/* ---------- Modal de reserva ---------- */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  background: rgba(8, 15, 30, 0.62);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  overflow-y: auto;
+}
+
+.modal {
+  position: relative;
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  width: min(560px, 100%);
+  padding: 2rem;
+  max-height: calc(100vh - 3rem);
+  overflow-y: auto;
+  animation: modal-up 0.28s ease;
+}
+
+.modal-reservation { width: min(940px, 100%); }
+
+@keyframes modal-up {
+  from { opacity: 0; transform: translateY(18px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.modal-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 5;
+}
+
+.modal-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-right: 2.5rem;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 1rem;
+  margin-bottom: 1.3rem;
+}
+.modal-head h2 { font-size: 1.5rem; margin-bottom: 0.2rem; }
+.modal-head p { margin: 0; font-size: 0.88rem; }
+
+.reservation-form {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 1.4rem;
+  align-items: start;
+}
+
+.form-section {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1rem 1.1rem 1.2rem;
+  margin: 0;
+  background: var(--surface);
+}
+.form-section + .form-section { margin-top: 1rem; }
+
+.form-section legend,
+fieldset.form-section legend {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.92rem;
+  padding: 0 0.45rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--ink);
+}
+
+.form-section:first-of-type { grid-column: 1; }
+.reservation-form > .form-section { grid-column: 1; grid-row: auto; }
+
+.price-box {
+  grid-column: 2;
+  grid-row: 1 / span 3;
+  position: sticky;
+  top: 1rem;
+  background: var(--navy);
+  color: #e2e8f0;
+  border-radius: var(--radius);
+  padding: 1.2rem 1.2rem 1.3rem;
+  box-shadow: var(--shadow);
+}
+.price-box h3 { color: #fff; font-size: 1rem; margin-bottom: 0.8rem; }
+.price-box .muted { color: #94a3b8; font-size: 0.86rem; }
+
+.price-lines {
+  list-style: none;
+  margin: 0 0 0.9rem;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.87rem;
+}
+.price-lines li {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.8rem;
+  color: #cbd5e1;
+}
+.price-note { font-size: 0.76rem !important; color: #fbbf24 !important; }
+
+.price-total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  border-top: 1px dashed rgba(148, 163, 184, 0.4);
+  padding-top: 0.8rem;
+  margin-bottom: 0.9rem;
+}
+.price-total span { font-size: 0.85rem; color: #94a3b8; }
+.price-total strong { font-size: 1.6rem; color: #fff; font-family: var(--font-display); }
+
+.price-box .check { color: #cbd5e1; font-size: 0.82rem; align-items: flex-start; }
+.price-box .check input { margin-top: 0.15rem; }
+.conditions { margin-bottom: 0.7rem; }
+.price-box .field-error { color: #fca5a5; display: block; margin-bottom: 0.5rem; }
+.price-box .alert { background: rgba(220, 38, 38, 0.16); border-color: rgba(248, 113, 113, 0.4); color: #fecaca; }
+
+.price-disclaimer {
+  font-size: 0.74rem;
+  color: #94a3b8;
+  text-align: center;
+  margin: 0.7rem 0 0;
+}
+
+.check-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin-bottom: 0.9rem;
+}
+
+/* ---------- Modal: éxito / login ---------- */
+.modal-success { text-align: center; }
+.success-icon {
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+  background: #dcfce7;
+  color: var(--success);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+}
+.modal-success h2 { font-size: 1.6rem; }
+.success-number {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.15rem;
+  color: var(--primary);
+  letter-spacing: 0.04em;
+  background: var(--primary-50);
+  border: 1px dashed #bfdbfe;
+  border-radius: 10px;
+  padding: 0.5rem;
+}
+.success-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.9rem;
+  text-align: left;
+  margin: 1.3rem 0;
+}
+.success-grid dt {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  font-weight: 700;
+}
+.success-grid dd { margin: 0.15rem 0 0; font-size: 0.92rem; font-weight: 600; }
+.success-total { color: var(--success); font-size: 1.1rem !important; }
+.success-note {
+  font-size: 0.84rem;
+  color: var(--muted);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.75rem;
+}
+.modal-actions {
+  display: flex;
+  gap: 0.6rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 1.3rem;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1080px) {
+  .reservation-form { grid-template-columns: 1fr; }
+  .price-box { grid-column: 1; grid-row: auto; position: static; }
+}
+
+@media (max-width: 940px) {
+  .explore-layout { grid-template-columns: 1fr; }
+  .parking-rail { position: static; max-height: none; }
+  .rail-scroll { max-height: 520px; }
+  .parking-map {
+    position: static;
+    height: 480px;
+    min-height: 0;
+    order: 2;
+  }
+  .map-detail { width: calc(100% - 28px); }
+}
+
+@media (max-width: 640px) {
+  .form-grid { grid-template-columns: 1fr; }
+  .form-grid .span-2 { grid-column: span 1; }
+  .modal { padding: 1.5rem 1.1rem; }
+  .modal-backdrop { padding: 0.75rem; }
+  .rail-head { flex-direction: column; }
+}

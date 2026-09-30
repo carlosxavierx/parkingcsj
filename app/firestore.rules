@@ -1,0 +1,31 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Catálogo de parkings: lectura pública, escritura solo con Admin SDK
+    match /parkings/{parkingId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Perfil del usuario
+    match /users/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow create, update: if request.auth != null && request.auth.uid == userId;
+      allow delete: if false;
+    }
+
+    // Reservas: cada usuario solo ve/crea/modifica las suyas. Nunca se borran.
+    match /reservations/{reservationId} {
+      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null
+                    && request.resource.data.userId == request.auth.uid
+                    && request.resource.data.status in ['pendiente', 'confirmada'];
+      allow update: if request.auth != null
+                    && resource.data.userId == request.auth.uid
+                    && request.resource.data.userId == resource.data.userId;
+      allow delete: if false;
+    }
+  }
+}

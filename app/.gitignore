@@ -1,0 +1,8 @@
+node_modules
+dist
+.env
+.env.local
+*.log
+# Credencials del compte de servei (mai al repositori)
+*firebase-adminsdk*.json
+serviceAccount*.json
