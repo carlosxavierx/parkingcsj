@@ -8,14 +8,21 @@ import { formatMoney } from '../../models/pricingModel.js';
 
 const DEFAULT_CENTER = [41.1189, 1.2445];
 
+const COLORS = {
+  reserved: '#ffc400', // reservable
+  top: '#3ddc84', // mejor valorados
+  info: '#7a7a88', // POI informativo
+  selected: '#ff7a1a', // seleccionado
+};
+
 function parkingIcon(parking, isSelected) {
   const color = !parking.reservable
-    ? '#64748b'
+    ? COLORS.info
     : isSelected
-      ? '#f59e0b'
+      ? COLORS.selected
       : parking.rating && parking.rating >= 4.5
-        ? '#16a34a'
-        : '#2563eb';
+        ? COLORS.top
+        : COLORS.reserved;
 
   return L.divIcon({
     className: 'parking-marker-wrap',

@@ -69,78 +69,97 @@ export default function RegisterPage() {
 
   return (
     <section className="auth-page">
-      <div className="auth-card auth-card-wide">
-        <span className="eyebrow">Únete a Tarraco Parkings</span>
-        <h1>Crea tu cuenta</h1>
-        <p className="muted">Reserva plazas y guarda el historial de tus aparcamientos.</p>
+      <div className="auth-shell">
+        <aside className="auth-brand">
+          <div>
+            <img className="auth-logo" src="/logo-csj.png" alt="CSJ Parkings" />
+            <h2>Crear cuenta, empezar a aparcar</h2>
+            <p>
+              Un minuto de registro y tendrás tus reservas, tus matrículas y tus
+              comprobantes siempre a mano.
+            </p>
+            <ul className="auth-points">
+              <li>Sin cuotas ni permanencia</li>
+              <li>Tarifa máxima de 4,00 € al día</li>
+              <li>Gestiona todas tus reservas</li>
+            </ul>
+          </div>
+          <span className="auth-quote">Online Parking Solutions</span>
+        </aside>
 
-        {error && <div className="alert alert-danger">{error}</div>}
+        <div className="auth-card auth-card-wide">
+          <span className="eyebrow">Únete a CSJ Parkings</span>
+          <h1>Crea tu cuenta</h1>
+          <p className="muted">Reserva plazas y guarda el historial de tus aparcamientos.</p>
 
-        <form onSubmit={submit} className="auth-form two-cols" noValidate>
-          <label className="field">
-            <span>Nombre *</span>
-            <input value={form.name} onChange={set('name')} autoComplete="given-name" />
-            {errors.name && <em className="field-error">{errors.name}</em>}
-          </label>
+          {error && <div className="alert alert-danger">{error}</div>}
 
-          <label className="field">
-            <span>Apellidos *</span>
-            <input value={form.surname} onChange={set('surname')} autoComplete="family-name" />
-            {errors.surname && <em className="field-error">{errors.surname}</em>}
-          </label>
+          <form onSubmit={submit} className="auth-form two-cols" noValidate>
+            <label className="field">
+              <span>Nombre *</span>
+              <input value={form.name} onChange={set('name')} autoComplete="given-name" />
+              {errors.name && <em className="field-error">{errors.name}</em>}
+            </label>
 
-          <label className="field">
-            <span>Email *</span>
-            <input
-              type="email"
-              value={form.email}
-              onChange={set('email')}
-              autoComplete="email"
-            />
-            {errors.email && <em className="field-error">{errors.email}</em>}
-          </label>
+            <label className="field">
+              <span>Apellidos *</span>
+              <input value={form.surname} onChange={set('surname')} autoComplete="family-name" />
+              {errors.surname && <em className="field-error">{errors.surname}</em>}
+            </label>
 
-          <label className="field">
-            <span>Teléfono</span>
-            <input type="tel" value={form.phone} onChange={set('phone')} autoComplete="tel" />
-          </label>
+            <label className="field">
+              <span>Email *</span>
+              <input
+                type="email"
+                value={form.email}
+                onChange={set('email')}
+                autoComplete="email"
+              />
+              {errors.email && <em className="field-error">{errors.email}</em>}
+            </label>
 
-          <label className="field">
-            <span>Contraseña *</span>
-            <input
-              type="password"
-              value={form.password}
-              onChange={set('password')}
-              autoComplete="new-password"
-            />
-            {errors.password && <em className="field-error">{errors.password}</em>}
-          </label>
+            <label className="field">
+              <span>Teléfono</span>
+              <input type="tel" value={form.phone} onChange={set('phone')} autoComplete="tel" />
+            </label>
 
-          <label className="field">
-            <span>Repite la contraseña *</span>
-            <input
-              type="password"
-              value={form.confirm}
-              onChange={set('confirm')}
-              autoComplete="new-password"
-            />
-            {errors.confirm && <em className="field-error">{errors.confirm}</em>}
-          </label>
+            <label className="field">
+              <span>Contraseña *</span>
+              <input
+                type="password"
+                value={form.password}
+                onChange={set('password')}
+                autoComplete="new-password"
+              />
+              {errors.password && <em className="field-error">{errors.password}</em>}
+            </label>
 
-          <label className="check conditions span-2">
-            <input type="checkbox" checked={form.conditions} onChange={set('conditions')} />
-            Acepto las condiciones de uso y la política de privacidad.
-          </label>
-          {errors.conditions && <em className="field-error span-2">{errors.conditions}</em>}
+            <label className="field">
+              <span>Repite la contraseña *</span>
+              <input
+                type="password"
+                value={form.confirm}
+                onChange={set('confirm')}
+                autoComplete="new-password"
+              />
+              {errors.confirm && <em className="field-error">{errors.confirm}</em>}
+            </label>
 
-          <button type="submit" className="btn btn-primary btn-block span-2" disabled={busy}>
-            {busy ? <Spinner inline label="Creando cuenta…" /> : 'Crear cuenta'}
-          </button>
-        </form>
+            <label className="check conditions span-2">
+              <input type="checkbox" checked={form.conditions} onChange={set('conditions')} />
+              Acepto las condiciones de uso y la política de privacidad.
+            </label>
+            {errors.conditions && <em className="field-error span-2">{errors.conditions}</em>}
 
-        <p className="auth-switch">
-          ¿Ya tienes cuenta? <Link to="/login">Inicia sesión</Link>
-        </p>
+            <button type="submit" className="btn btn-primary btn-block span-2" disabled={busy}>
+              {busy ? <Spinner inline label="Creando cuenta…" /> : 'Crear cuenta'}
+            </button>
+          </form>
+
+          <p className="auth-switch">
+            ¿Ya tienes cuenta? <Link to="/login">Inicia sesión</Link>
+          </p>
+        </div>
       </div>
     </section>
   );

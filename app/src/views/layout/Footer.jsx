@@ -1,15 +1,27 @@
 import { Link } from 'react-router-dom';
 
+const STRIP = [
+  '14 parkings en catálogo',
+  'Cancelación sin coste',
+  'Acceso por matrícula',
+  'Tarifa máxima 4,00 € / día',
+];
+
 export default function Footer() {
   return (
     <footer className="site-footer">
+      <div className="footer-strip">
+        <div className="container footer-strip-inner">
+          {STRIP.map((item) => (
+            <span key={item}>{item}</span>
+          ))}
+        </div>
+      </div>
+
       <div className="container footer-grid">
         <div className="footer-col footer-brand-col">
           <Link to="/" className="brand">
-            <span className="brand-mark">P</span>
-            <span className="brand-text">
-              Tarraco<strong>Parkings</strong>
-            </span>
+            <img className="footer-logo" src="/logo-csj.png" alt="CSJ Parkings" />
           </Link>
           <p>
             Reserva tu plaza de aparcamiento en los parkings municipales de
@@ -49,9 +61,9 @@ export default function Footer() {
       </div>
 
       <div className="container footer-bottom">
-        <span>© {new Date().getFullYear()} Tarraco Parkings · Todos los derechos reservados</span>
+        <span>© {new Date().getFullYear()} CSJ Parkings · Todos los derechos reservados</span>
         <span className="footer-tech">
-          Datos cartográficos: Geoapify · Backend: Firebase
+          Datos cartográficos: <strong>Geoapify</strong> · Backend: <strong>Firebase</strong>
         </span>
       </div>
     </footer>

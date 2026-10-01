@@ -32,11 +32,25 @@ export default function Header() {
 
   return (
     <header className="site-header">
+      <div className="topbar">
+        <div className="container topbar-inner">
+          <span className="topbar-tag">Online Parking Solutions · Tarragona</span>
+          <div className="topbar-links">
+            <span>Reserva <strong>24/7</strong></span>
+            <a href="tel:+34977000000">+34 977 00 00 00</a>
+            <a href="mailto:hola@tarracoparkings.cat">Soporte</a>
+          </div>
+        </div>
+      </div>
+
       <div className="container header-inner">
-        <Link to="/" className="brand" onClick={close} aria-label="Tarraco Parkings">
-          <span className="brand-mark">P</span>
+        <Link to="/" className="brand" onClick={close} aria-label="CSJ Parkings">
+          <img className="brand-logo" src="/logo-mark.png" alt="" aria-hidden="true" />
           <span className="brand-text">
-            Tarraco<strong>Parkings</strong>
+            <span>
+              CSJ <strong>Parkings</strong>
+            </span>
+            <span className="brand-tagline">Online Parking Solutions</span>
           </span>
         </Link>
 

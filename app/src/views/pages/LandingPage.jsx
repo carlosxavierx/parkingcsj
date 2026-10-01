@@ -25,7 +25,7 @@ const FEATURES = [
   {
     icon: <IconStar />,
     title: 'Mejor valoración primero',
-    text: 'Un rail prioritario te muestra los aparcamientos con mejores opiniones justo antes del mapa.',
+    text: 'Un rail prioritario muestra los aparcamientos con mejores opiniones justo antes del mapa.',
   },
   {
     icon: <IconBolt />,
@@ -45,7 +45,7 @@ const FEATURES = [
   {
     icon: <IconCheck />,
     title: 'Cancelación flexible',
-    text: 'Gestiona todas tus reservas desde tu área personal y cancela sin coste.',
+    text: 'Gestiona todas tus reservas desde tu área personal y cancela sin coste: la reserva nunca se elimina, cambia de estado.',
   },
 ];
 
@@ -188,49 +188,31 @@ export default function LandingPage() {
           </div>
         </div>
 
-        <div className="container stats-bar">
-          <div className="stat">
-            <strong>{stats.total || '—'}</strong>
-            <span>parkings en catálogo</span>
-          </div>
-          <div className="stat">
-            <strong>{stats.avg ? stats.avg.toFixed(1) : '—'} ★</strong>
-            <span>valoración media</span>
-          </div>
-          <div className="stat">
-            <strong>{stats.spots ? stats.spots.toLocaleString('es-ES') : '—'}</strong>
-            <span>plazas gestionadas</span>
-          </div>
-          <div className="stat">
-            <strong>60 s</strong>
-            <span>para reservar</span>
+        {/* BANDA DE ESTADÍSTICAS (inversa) */}
+        <div className="stats-band">
+          <div className="container stats-bar">
+            <div className="stat">
+              <strong>{stats.total || '—'}</strong>
+              <span>parkings en catálogo</span>
+            </div>
+            <div className="stat">
+              <strong>{stats.avg ? stats.avg.toFixed(1) : '—'} ★</strong>
+              <span>valoración media</span>
+            </div>
+            <div className="stat">
+              <strong>{stats.spots ? stats.spots.toLocaleString('es-ES') : '—'}</strong>
+              <span>plazas gestionadas</span>
+            </div>
+            <div className="stat">
+              <strong>60 s</strong>
+              <span>para reservar</span>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* VENTAJAS */}
-      <section className="section container" id="ventajas">
-        <div className="section-head">
-          <span className="eyebrow">Por qué Tarraco Parkings</span>
-          <h2>Todo lo que necesitas para aparcar sin estrés</h2>
-          <p className="muted">
-            Una plataforma pensada para conductores: mapa, valoraciones y reserva
-            online en una sola experiencia.
-          </p>
-        </div>
-        <div className="feature-grid">
-          {FEATURES.map((f) => (
-            <article className="feature-card" key={f.title}>
-              <span className="feature-icon">{f.icon}</span>
-              <h3>{f.title}</h3>
-              <p>{f.text}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      {/* COMO FUNCIONA */}
-      <section className="section section-alt" id="como-funciona">
+      {/* CÓMO FUNCIONA */}
+      <section className="section section-steps" id="como-funciona">
         <div className="container">
           <div className="section-head">
             <span className="eyebrow">Cómo funciona</span>
@@ -248,54 +230,86 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* PARKINGS DESTACADOS */}
-      <section className="section container" id="parkings">
-        <div className="section-head row">
-          <div>
-            <span className="eyebrow">Mejor valorados</span>
-            <h2>Parkings destacados de Tarragona</h2>
+      {/* VENTAJAS (bento) */}
+      <section className="section section-alt" id="ventajas">
+        <div className="container">
+          <div className="section-head">
+            <span className="eyebrow">Por qué CSJ Parkings</span>
+            <h2>Todo lo que necesitas para aparcar sin estrés</h2>
+            <p className="muted">
+              Una plataforma pensada para conductores: mapa, valoraciones y reserva
+              online en una sola experiencia.
+            </p>
           </div>
-          <Link to="/explorar" className="btn btn-outline">
-            Ver todos en el mapa <IconArrow width={16} height={16} />
-          </Link>
-        </div>
-
-        {loading ? (
-          <Spinner label="Cargando parkings destacados…" />
-        ) : (
-          <div className="featured-grid">
-            {featured.map((p, i) => (
-              <ParkingCard
-                key={p.id}
-                parking={p}
-                index={i}
-                showRank
-                onSelect={() => navigate('/explorar')}
-                onReserve={() => navigate('/explorar')}
-              />
+          <div className="feature-grid">
+            {FEATURES.map((f, i) => (
+              <article
+                className={`feature-card ${i === 0 ? 'lead' : ''} ${
+                  i === FEATURES.length - 1 ? 'wide' : ''
+                }`}
+                key={f.title}
+              >
+                <span className="feature-icon">{f.icon}</span>
+                <div>
+                  <h3>{f.title}</h3>
+                  <p>{f.text}</p>
+                </div>
+              </article>
             ))}
-            {!loading && featured.length === 0 && (
-              <div className="alert alert-info">
-                Aún no hay parkings cargados. Ejecuta <code>npm run seed</code> en la
-                carpeta <code>app/</code> para poblar Firestore con los parkings de
-                Tarragona.
-              </div>
-            )}
           </div>
-        )}
+        </div>
       </section>
 
-      {/* TARIFAS */}
-      <section className="section section-dark" id="tarifas">
+      {/* PARKINGS DESTACADOS */}
+      <section className="section" id="parkings">
+        <div className="container">
+          <div className="section-head row">
+            <div>
+              <span className="eyebrow">Mejor valorados</span>
+              <h2>Parkings destacados de Tarragona</h2>
+            </div>
+            <Link to="/explorar" className="btn btn-outline">
+              Ver todos en el mapa <IconArrow width={16} height={16} />
+            </Link>
+          </div>
+
+          {loading ? (
+            <Spinner label="Cargando parkings destacados…" />
+          ) : (
+            <div className="featured-grid">
+              {featured.map((p, i) => (
+                <ParkingCard
+                  key={p.id}
+                  parking={p}
+                  index={i}
+                  showRank
+                  onSelect={() => navigate('/explorar')}
+                  onReserve={() => navigate('/explorar')}
+                />
+              ))}
+              {!loading && featured.length === 0 && (
+                <div className="alert alert-info">
+                  Aún no hay parkings cargados. Ejecuta <code>npm run seed</code> en la
+                  carpeta <code>app/</code> para poblar Firestore con los parkings de
+                  Tarragona.
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* TARIFAS (banda amarilla) */}
+      <section className="section section-yellow" id="tarifas">
         <div className="container tariff-grid">
           <div className="section-head left">
-            <span className="eyebrow light">Tarifas transparentes</span>
+            <span className="eyebrow">Tarifas transparentes</span>
             <h2>Precios claros, sin sorpresas</h2>
-            <p className="muted light">
+            <p className="muted">
               El mismo cálculo que verás en el formulario: se aplica automáticamente al
               confirmar la reserva.
             </p>
-            <Link to="/explorar" className="btn btn-primary">
+            <Link to="/explorar" className="btn btn-dark">
               Calcular mi reserva <IconArrow width={16} height={16} />
             </Link>
           </div>
@@ -328,28 +342,33 @@ export default function LandingPage() {
       </section>
 
       {/* FAQ */}
-      <section className="section container" id="faq">
-        <div className="section-head">
-          <span className="eyebrow">Preguntas frecuentes</span>
-          <h2>Resolvemos tus dudas</h2>
-        </div>
-        <div className="faq-list">
-          {FAQS.map((item, i) => (
-            <div className={`faq-item ${openFaq === i ? 'open' : ''}`} key={item.q}>
-              <button
-                type="button"
-                className="faq-question"
-                onClick={() => setOpenFaq(openFaq === i ? -1 : i)}
-                aria-expanded={openFaq === i}
-              >
-                {item.q}
-                <span className="faq-icon">{openFaq === i ? '−' : '+'}</span>
-              </button>
-              <div className="faq-answer">
-                <p>{item.a}</p>
+      <section className="section" id="faq">
+        <div className="container faq-layout">
+          <div className="section-head">
+            <span className="eyebrow">Preguntas frecuentes</span>
+            <h2>Resolvemos tus dudas</h2>
+            <p className="muted">
+              Todo lo que necesitas saber antes de reservar tu plaza en Tarragona.
+            </p>
+          </div>
+          <div className="faq-list">
+            {FAQS.map((item, i) => (
+              <div className={`faq-item ${openFaq === i ? 'open' : ''}`} key={item.q}>
+                <button
+                  type="button"
+                  className="faq-question"
+                  onClick={() => setOpenFaq(openFaq === i ? -1 : i)}
+                  aria-expanded={openFaq === i}
+                >
+                  {item.q}
+                  <span className="faq-icon">{openFaq === i ? '−' : '+'}</span>
+                </button>
+                <div className="faq-answer">
+                  <p>{item.a}</p>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </section>
 
@@ -357,18 +376,19 @@ export default function LandingPage() {
       <section className="cta-band">
         <div className="container cta-inner">
           <div>
+            <span className="eyebrow">Empieza ahora</span>
             <h2>¿Listo para aparcar sin dar vueltas?</h2>
             <p>Encuentra tu plaza ahora mismo en el mapa de Tarragona.</p>
           </div>
           <div className="cta-actions">
             <button
               type="button"
-              className="btn btn-light btn-lg"
+              className="btn btn-primary btn-lg"
               onClick={() => navigate('/explorar')}
             >
               Abrir mapa <IconArrow width={17} height={17} />
             </button>
-            <Link to="/registro" className="btn btn-outline-light btn-lg">
+            <Link to="/registro" className="btn btn-outline btn-lg">
               Crear cuenta
             </Link>
           </div>
