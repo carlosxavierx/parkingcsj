@@ -20,16 +20,16 @@ proyecto_parking/
 └── src/             # Backend PHP: config, includes, controllers, views
 ```
 
-> Treball en curs: fins ara només s'ha completat el **Sprint 1 (anàlisi i disseny)**.
-> Cap codi de l'aplicació no s'ha creat encara. Es desenvolupa des de zero sense.
+> **Estat:** Sprint 1 (anàlisi i disseny) revisat — v2, 13/11/2026.
+> L'aplicació definitiva es desenvolupa al Sprint 2 en **PHP + MariaDB sobre Apache2**, com demana l'enunciat.
 
 ---
 
-## Implementació web (React + Firebase + Geoapify)
+## Prototip visual (React + Firebase)
 
-La versió operativa de l'aplicació viu a [`../app/`](../app/) i es pot executar amb
-`npm install && npm run dev`. Veure [`../app/README.md`](../app/README.md) per a la
-documentació completa (estructura MVC, seed de Firestore, regles de seguretat…).
+La carpeta [`../app/`](../app/) conté un **prototip** de la interfície fet durant octubre per validar el
+disseny i el flux de reserva. **No és el producte final**: l'enunciat exigeix Apache2 + PHP + MySQL/MariaDB.
+Se'n reaprofiten el disseny (CSS), les pantalles i l'algorisme de càlcul de preus.
 
 ## Documents del Sprint 1
 
@@ -38,11 +38,11 @@ A la carpeta `sprint1/`:
 | Fitxer | Contingut |
 |---|---|
 | `01-esquema-funcional.md` | Casos d'ús, fluxos usuari/admin i càlcul de tarifes |
-| `02-modelo-er.md` | Model E/R (8 entitats, relacions, claus) |
-| `03-modelo-er.sql` | DDL de creació de la BD (MySQL/MariaDB) |
+| `02-modelo-er.md` | Model E/R v2 (16 taules, relacions, claus, triggers, vistes) |
+| `03-modelo-er.sql` | Script de creació de la BD + dades de prova (MariaDB/MySQL) |
 | `04-planificacion.md` | Sprints, tasques, rols, Gantt |
 | `05-presentacion.md` | Guió de l'exposició oral |
-| `06-diagramas.html` | Diagrames |
+| `06-diagramas.html` | Diagrames per a la presentació (generat amb `python3 generar-diagramas.py`) |
 
 > Els fitxers es mantenen provisionalment a `sprint1/`; s'han de moure a `docs/`
 > quan es reorganitzi la documentació del projecte.

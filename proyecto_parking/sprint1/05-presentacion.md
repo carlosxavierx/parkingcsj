@@ -1,108 +1,124 @@
-# Sprint 1 — Document de presentació (exposició oral)
+# Sprint 1 — Document de presentació (exposició oral, v2)
 
 ## Sistema de Reserves de Places de Pàrquing · Tarraco Parkings (Tarragona)
 
-**Durada orientativa:** 10–15 minuts + torn de preguntes.
-**Ponents:** tots els membres de l'equip (1–2 minuts per apartat).
-**Format:** presentació de diapositives + demo funcionant.
+**Equip:** Carlos · Sara · Joel
+**Durada:** **8 minuts** (la rúbrica demana entre 5 i 10) + preguntes.
+**Suport:** diapositives + `06-diagramas.html` obert en una pestanya per ampliar diagrames si cal.
 
 ---
 
-## Guió de la presentació
+## Repartiment del temps
 
-### D1 · Portada (1 diapositiva · 30 s)
-- Títol del projecte.
-- Nom de grup / membres.
-- Data i curs.
-
-### D2 · Objectiu i context del projecte (1 diapositiva · 1 min)
-- L'empresa **Tarraco Parkings** gestiona els pàrquings municipals de Tarragona.
-- Necessitat: sistema en línia per **reservar places de pàrquing**, controlar l'accés i fer el pagament.
-- Dos rols: **usuaris finals** i **administradors**.
-
-### D3 · Esquema general del sistema (1–2 diapositives · 2 min)
-- Arquitectura: web (usuari) + panel (admin) + processos automàtics (càlcul de preus, lector de matrícules).
-- Cumpliment dels objectius de l'enunciat.
-- Stack: PHP + MariaDB + Apache2. *(Futurs sprints: RAID, SSL, monitoratge.)*
-
-### D4 · Funcionament i flux de l'usuari (2 diapositives · 2–3 min)
-- Recorregut complet:
-  1. Registre (dades personals) i inici de sessió.
-  2. Alta de vehicles (marca, model, matrícula).
-  3. Selecció de pàrquing, data, hora d'entrada i sortida.
-  4. **Càlcul automàtic del preu** i 10% de gestió.
-  5. Acceptació de condicions i **pagament**.
-  6. Generació de **número de reserva** i **PDF**.
-  7. El dia de la reserva: el **lector de matrícules** obra la barrera si la reserva és activa.
-  8. A la sortida: control del temps i **cobraments automàtics** per excés.
-
-### D5 · Procés complet de reserva (1 diapositiva · 1–2 min)
-- Mostrar el flux de reserva (diapositiva amb el diagrama de flux).
-- Explicar el **càlcul de tarifes** amb 1 exemple real:
-  - 3 hores diürnes → 1,90 + 1,90 + 0,20 = 4,00 € + 0,40 € de gestió = **4,40 €**.
-
-### D6 · Base de dades: model E/R (2–3 diapositives · 3 min)
-- Presentar el diagrama E/R.
-- Taules principals: `clients`, `vehicles`, `parquings`, `places`, `reserves`, `pagaments`, `accessos`, `tarifes`.
-- Relacions clau:
-  - Un client → N vehicles i N reserves.
-  - Cada reserva → un únic vehicle i un únic pàrquing.
-  - Una reserva → un únic pagament (1:1).
-- Claus primàries i foranes: mostrar exemples d'FK (`reserves.id_client`, `reserves.id_vehicle`, ...).
-- **Justificació del disseny:**
-  - 3FN (sense dades repetides).
-  - `vehicles.matricula` UNIQUE per al lector de matrícules.
-  - Reserves amb estat `cancel·lada` (mai s'eliminen → històric/auditoria).
-  - Taula `tarifes` configurable sense tocar el codi.
-
-### D7 · Planificació (1–2 diapositives · 2 min)
-- Metodologia per **sprints** (S1–S9) i eines (Trello/GitHub Projects).
-- **Distribució de rols:** cap de projecte, backend/BD, frontend/UX, infraestructura/seguretat.
-- **Calendari:** 10 setmanes; diagrama de Gantt.
-- Dependències principals: S2 → S3 → S4 → S5/S6/S7 → S8 → S9.
-
-### D8 · Demo (a partir de Sprint 5) · 2–3 min
-- Mostrar: registre, login, alta de vehicle, reserva amb càlcul de preu, PDF, i el panel d'administració (reserves i cancel·lació).
-
-### D9 · Conclusions i properes passes (1 diapositiva · 1 min)
-- Resum del que està fet (Sprint 1) i del que ve (S2 infraestructura, S3 BD, S4 backend...).
-- Agraïments i torn de preguntes.
+| # | Diapositiva | Qui | Temps |
+|---|---|---|---|
+| 1 | Portada | Joel | 0:20 |
+| 2 | El problema i l'objectiu | Joel | 0:40 |
+| 3 | Arquitectura i tecnologies | Sara | 0:50 |
+| 4 | Parts de l'aplicació i rols | Sara | 0:40 |
+| 5 | Casos d'ús | Sara | 0:50 |
+| 6 | Flux del client (passos de l'usuari) | Sara | 0:50 |
+| 7 | Lector de matrícules i estats de la reserva | Carlos | 0:40 |
+| 8 | Càlcul del preu (exemple) | Carlos | 0:40 |
+| 9 | Model E/R | Carlos | 1:00 |
+| 10 | Què hem millorat a la BD i regles que garanteix | Carlos | 0:40 |
+| 11 | Planificació: tasques, rols i Gantt | Carlos | 0:50 |
+| 12 | Conclusions i següents passos | Sara | 0:20 |
+| | **Total** | | **≈ 8:00** |
 
 ---
 
-## Preguntes previsibles del tribunal (preparar respostes)
+## Contingut de cada diapositiva
 
-1. **Per què les reserves no s'eliminen mai?**
-   - Per auditoria i històric: es marca com a `cancel·lada`. Compliment de l'especificació.
-2. **Com es calcula el preu si el client surt més tard del reservat?**
-   - El lector registra la sortida, es calcula la hora addicional (tarifa normal o nocturna) i es **cobra automàticament** amb el mateix mètode de pagament.
-3. **Com s'assegura la seguretat de les dades?**
-   - Contrasenyes amb `password_hash()` (bcrypt), sentències preparades (PDO) contra SQL injection, sanitització (XSS), sessions segures, SSL/TLS i xifrat/anonimització de dades sensibles (sprints S2/S8).
-4. **Com funciona el control d'accés?**
-   - Lector de matrícules: busca la placa a `vehicles`, comprova que hi ha una **reserva `confirmada`** per a aquell dia/hora i obre la barrera; registra l'accés a la taula `accessos`.
-5. **Què passa si el pàrquing està ple?**
-   - Es comproven les `places` lliures abans d'obrir la barrera (i les places reservables abans de crear la reserva).
-6. **On es configuren les tarifes?**
-   - A la taula `tarifes`; l'administrador les pot editar sense canviar codi.
-7. **Què passa si un client no es presenta?**
-   - La reserva es pot cancel·lar des de l'admin (estat `cancel·lada`); política de reemborsament definible.
+### 1 · Portada — *Joel*
+- **Tarraco Parkings** · Sistema de reserves de places de pàrquing a Tarragona.
+- Carlos, Sara, Joel · ASIX2 · Projecte 1 · Sprint 1.
+
+> *"Bon dia, som Carlos, Sara i Joel i us presentem el projecte Tarraco Parkings."*
+
+### 2 · El problema i l'objectiu — *Joel*
+- Tarraco Parkings gestiona els pàrquings municipals de Tarragona.
+- Volen que la gent pugui **reservar una plaça per Internet**, que la **barrera s'obri sola llegint la matrícula** i que es **cobri automàticament**.
+- Dues interfícies: la dels **usuaris** i la de **gestió**.
+
+> *"El client vol que els usuaris reservin per Internet, que la barrera s'obri sola amb la matrícula i que els administradors puguin gestionar-ho tot. Ara la Sara us explica com ho hem pensat."*
+
+### 3 · Arquitectura i tecnologies — *Sara*
+- Diagrama d'arquitectura (3 màquines virtuals): `srv-web` (Apache2 + PHP + SSL + RAID 1), `srv-db` (MariaDB + phpMyAdmin + còpies), `srv-monitor` (Zabbix).
+- Seguretat: HTTPS, tallafocs, la BD només accepta connexions del servidor web.
+- Opcional: 2n servidor web + balancejador.
+
+### 4 · Parts de l'aplicació i rols — *Sara*
+- **Web pública** (visitant) · **Àrea de client** · **Panell d'operador** · **Panell d'administració** · **Servei del lector**.
+- 3 rols d'usuari: client, operador, administrador.
+
+### 5 · Casos d'ús — *Sara*
+- Diagrama de casos d'ús. Destacar: crear reserva *inclou* calcular preu; control d'accés *s'estén* amb el cobrament de l'excés.
+
+### 6 · Flux del client — *Sara*
+Els 11 passos de l'usuari (esquema funcional §6.1), en una línia:
+**Registre → vehicle i mètode de pagament → formulari → preu automàtic → condicions → pagament → número + PDF → barrera → excés.**
+
+### 7 · Lector de matrícules i estats — *Carlos*
+- Entrada: reserva confirmada → obre; si no, places lliures → obre; si no → tancada.
+- Sortida: si s'ha passat de l'hora → cobra la diferència amb la mateixa targeta.
+- Estats: `pendent → confirmada → en_curs → completada` (+ `cancelada`, `no_presentat`). **Les reserves no s'esborren mai.**
+
+### 8 · Càlcul del preu — *Carlos*
+- Taula de tarifes de l'enunciat.
+- Exemple: **08:00 → 11:00** = 1,90 + 1,90 + 0,20 = 4,00 € + 10 % = **4,40 €**.
+- Exemple nocturn: **22:30 → 00:30** = 2 × 0,60 = 1,20 € + 10 % = **1,32 €**.
+- El preu el calcula el **servidor**, no el navegador.
+
+### 9 · Model E/R — *Carlos*
+- Diagrama E/R. 16 taules en 3 blocs: usuaris i clients · pàrquings · reserves i control.
+- Relacions de l'enunciat: **client 1:N vehicles**, **client 1:N reserves**, **cada reserva → 1 pàrquing i 1 vehicle**.
+- Altres: reserva 1:N pagaments (reserva + excés), operadors N:M pàrquings.
+
+### 10 · Millores a la base de dades — *Carlos*
+- Taula "v1 → v2" (resumida a 5 punts): dates que passen de dia, mètodes de pagament, pagaments d'excés, rols, dades sensibles xifrades.
+- Regles que garanteix la mateixa BD: no esborrar reserves (trigger), no superar places, vehicle del mateix client (FK compostes), historial automàtic.
+
+### 11 · Planificació — *Carlos*
+- Eina: **GitHub Projects** (captura del tauler).
+- Rols: Carlos (coordinació, BD, backend), Sara (frontend, servidors, monitoratge), Joel (dades, proves, bibliografia).
+- Gantt i camí crític: BD → PHP → reserva → admin.
+
+### 12 · Conclusions — *Sara*
+- Sprint 1: anàlisi i disseny complets i revisats.
+- Sprint 2: muntar els servidors i programar l'aplicació en PHP.
+- *"Gràcies. Teniu alguna pregunta?"*
 
 ---
 
-## Materials a aportar el dia de l'exposició
+## Preguntes previsibles
 
-- Presentació en format editable (PPTX/Canva/Google Slides) + PDF.
-- `01-esquema-funcional.md` (casos d'ús i fluxos).
-- `02-modelo-er.md` + `03-modelo-er.sql` (model E/R).
-- `04-planificacion.md` (Gantt i rols).
-- `06-diagramas.html` (diagrames renderitzats per mostrar en pantalla).
-- Bibliografia (incloent les eines d'IA usades i els prompts, segons les normes del curs).
+| Pregunta | Resposta curta | Qui |
+|---|---|---|
+| Per què no s'esborren les reserves? | Ho demana l'enunciat i serveix d'històric i auditoria. A més, un *trigger* de la BD ho impedeix. | Carlos |
+| Per què separeu `usuaris` i `clients`? | Un admin o operador no té DNI ni vehicles. Els rols són una taula per poder-ne afegir més. | Carlos |
+| Com protegiu les dades? | HTTPS, bcrypt, DNI xifrat, targetes tokenitzades, PDO (SQL injection), CSRF, tallafocs. | Sara |
+| Com es cobra l'excés? | Preu real − preu reservat (+10 %), amb el mateix mètode de pagament. | Carlos |
+| Què passa si el pàrquing és ple? | No es pot reservar (trigger) i el lector no obre si no hi ha reserva ni places lliures. | Carlos |
+| On s'executarà? | 3 VM a VirtualBox (web, BD, monitoratge) amb Ubuntu Server. | Sara |
+| Com feu les còpies? | Completa setmanal + incremental diària amb `mariabackup` i `cron`, i provem la restauració. | Carlos |
+| Per què teníeu una app en React? | Va ser un prototip per validar el disseny; el producte final és PHP + MySQL com demana l'enunciat. | Sara |
 
 ---
 
-## Documents relacionats
+## Consells per a l'exposició
 
-- `01-esquema-funcional.md` — contingut per a D4/D5.
-- `02-modelo-er.md` — contingut per a D6.
-- `04-planificacion.md` — contingut per a D7.
-- `06-diagramas.html` — diagrames per a les diapositives.
+- **Assajar amb cronòmetre** almenys una vegada: si passa de 9 min, retallar la diapositiva 10.
+- Cada ponent dona pas al següent amb una frase (*"Ara en Carlos us explica la base de dades"*).
+- Mostrar els diagrames grans: si no es llegeixen, obrir `06-diagramas.html` i fer zoom.
+- Poca lletra a les diapositives: el detall és als documents.
+
+---
+
+## Materials a entregar
+
+1. Esquema funcional / casos d'ús — `01-esquema-funcional.md` (+ diagrames)
+2. Model E/R — `02-modelo-er.md` + `03-modelo-er.sql`
+3. Planificació — `04-planificacion.md` + enllaç al tauler de GitHub Projects
+4. Document de presentació — diapositives (PDF) + aquest guió
+5. Bibliografia i ús d'IA (eines, parts fetes amb IA i *prompts*)

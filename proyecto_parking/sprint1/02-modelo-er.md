@@ -1,284 +1,462 @@
-# Sprint 1 — Model Entitat-Relació (E/R) de la base de dades
+# Sprint 1 — Model Entitat-Relació (E/R) de la base de dades (v2)
 
 ## Sistema de Reserves de Places de Pàrquing · Tarraco Parkings (Tarragona)
 
-**Stack:** MySQL / MariaDB · **Joc de caràcters:** `utf8mb4` (suporta accents i emojis)
+**SGBD:** MariaDB ≥ 10.5 / MySQL ≥ 8.0.16 · **Motor:** InnoDB (transaccions i claus foranes) · **Joc de caràcters:** `utf8mb4`
+**Script:** [`03-modelo-er.sql`](03-modelo-er.sql) (crea la BD, triggers, vistes i dades de demostració)
 
 ---
 
-## 1. Diagrama E/R
+## 1. Visió general
+
+La base de dades s'organitza en **4 blocs** i **16 taules**:
+
+| Bloc | Taules | Per a què serveix |
+|---|---|---|
+| **1. Usuaris i clients** | `rols`, `usuaris`, `clients`, `vehicles`, `metodes_pagament` | Registre, inici de sessió, rols (client / operador / admin), dades personals protegides, vehicles i mitjans de pagament del client. |
+| **2. Pàrquings** | `parquings`, `operadors_parquings`, `places`, `lectors`, `tarifes`, `configuracio`, `condicions` | Pàrquings amb les seves places reservables, lectors de matrícules, tarifes editables, paràmetres i condicions d'ús. |
+| **3. Reserves i control** | `reserves`, `reserves_historial`, `pagaments`, `accessos` | Reserves (mai s'esborren), auditoria de canvis, pagaments (reserva + excés + reemborsament) i registre d'entrades/sortides. |
+| **4. Lògica a la BD** | 7 triggers + 3 vistes | Regles de negoci que la BD garanteix encara que falli el codi PHP. |
+
+---
+
+## 2. Diagrama E/R
 
 ```mermaid
 erDiagram
+    ROLS ||--o{ USUARIS : "assigna"
+    USUARIS ||--o| CLIENTS : "té dades de"
+    USUARIS ||--o{ OPERADORS_PARQUINGS : "opera"
+    PARQUINGS ||--o{ OPERADORS_PARQUINGS : "és operat per"
     CLIENTS ||--o{ VEHICLES : "posseeix"
+    CLIENTS ||--o{ METODES_PAGAMENT : "desa"
     CLIENTS ||--o{ RESERVES : "realitza"
-    VEHICLES ||--o{ RESERVES : "utilitzat en"
+    VEHICLES ||--o{ RESERVES : "s'usa en"
+    METODES_PAGAMENT ||--o{ RESERVES : "paga"
+    CONDICIONS ||--o{ RESERVES : "acceptades a"
     PARQUINGS ||--o{ PLACES : "conté"
-    PARQUINGS ||--o{ RESERVES : "atién"
-    PLACES ||--o{ RESERVES : "assignada a"
-    RESERVES ||--|| PAGAMENTS : "pagat amb"
-    PARQUINGS ||--o{ ACCESSOS : "registra"
-    RESERVES ||--o{ ACCESSOS : "relacionat amb"
+    PARQUINGS ||--o{ LECTORS : "té"
+    PARQUINGS ||--o{ RESERVES : "rep"
+    PARQUINGS |o--o{ TARIFES : "pot tenir pròpies"
+    PLACES |o--o{ RESERVES : "assignada a"
+    RESERVES ||--o{ PAGAMENTS : "genera"
+    METODES_PAGAMENT ||--o{ PAGAMENTS : "s'usa en"
+    RESERVES ||--o{ RESERVES_HISTORIAL : "audita"
+    USUARIS |o--o{ RESERVES_HISTORIAL : "fa el canvi"
+    LECTORS ||--o{ ACCESSOS : "registra"
+    VEHICLES |o--o{ ACCESSOS : "detectat a"
+    RESERVES |o--o{ ACCESSOS : "justifica"
 
+    ROLS {
+        tinyint id_rol PK
+        varchar codi UK "client, operador, admin"
+        varchar nom
+    }
+    USUARIS {
+        int id_usuari PK
+        tinyint id_rol FK
+        varchar email UK
+        varchar password_hash "bcrypt"
+        bool email_verificat
+        tinyint intents_fallits
+        bool actiu
+    }
     CLIENTS {
         int id_client PK
-        string nom
-        string primer_cognom
-        string segon_cognom
-        string email UK
-        string telefon
-        string password_hash
-        bool es_admin
-        bool actiu
-        datetime data_registre
+        int id_usuari FK,UK
+        varchar nom
+        varchar primer_cognom
+        varbinary dni_xifrat "AES"
+        char dni_hash UK
+        varchar telefon
+        datetime consentiment_rgpd
     }
-
     VEHICLES {
         int id_vehicle PK
         int id_client FK
-        string matricula UK
-        string marca
-        string model
+        varchar matricula
+        varchar marca
+        varchar model
+        enum tipus
+        bool actiu
+        varchar matricula_activa UK "generada"
     }
-
+    METODES_PAGAMENT {
+        int id_metode PK
+        int id_client FK
+        enum tipus "targeta, paypal, bizum"
+        char ultims_digits
+        varchar token_passarela
+        bool predeterminat
+    }
     PARQUINGS {
         int id_parquing PK
-        string nom
-        string ubicacio
-        int places_totals
-        int places_reservables
+        varchar nom UK
+        varchar adreca
+        decimal latitud
+        decimal longitud
+        smallint places_totals
         bool actiu
     }
-
+    OPERADORS_PARQUINGS {
+        int id_usuari PK,FK
+        int id_parquing PK,FK
+    }
     PLACES {
         int id_placa PK
         int id_parquing FK
-        string codi_placa
-        string tipus
-        string estat
+        varchar codi_placa
+        tinyint planta
+        enum tipus
+        bool reservable
+        enum estat "operativa, fora_servei"
     }
-
+    LECTORS {
+        int id_lector PK
+        int id_parquing FK
+        varchar codi UK
+        enum tipus "entrada, sortida"
+    }
+    TARIFES {
+        int id_tarifa PK
+        int id_parquing FK "NULL = general"
+        enum codi
+        decimal preu
+        date vigent_des
+        date vigent_fins
+    }
+    CONFIGURACIO {
+        varchar clau PK
+        varchar valor
+    }
+    CONDICIONS {
+        int id_condicions PK
+        varchar versio UK
+        text text
+    }
     RESERVES {
         int id_reserva PK
-        string numero_reserva UK
+        varchar numero_reserva UK
         int id_client FK
         int id_vehicle FK
         int id_parquing FK
         int id_placa FK
-        date data
-        time hora_entrada
-        time hora_sortida
+        int id_metode FK
+        int id_condicions FK
+        datetime data_hora_entrada
+        datetime data_hora_sortida
         decimal preu_base
         decimal despeses_gestio
         decimal preu_total
-        string estat
-        bool condicions_acceptades
-        string pdf_path
-        datetime creada_a
+        enum estat
     }
-
+    RESERVES_HISTORIAL {
+        bigint id_historial PK
+        int id_reserva FK
+        int id_usuari FK
+        enum accio
+        varchar estat_anterior
+        varchar estat_nou
+        datetime data_canvi
+    }
     PAGAMENTS {
         int id_pagament PK
         int id_reserva FK
-        string metode
+        int id_metode FK
+        enum tipus "reserva, exces, reemborsament"
         decimal import
-        string estat
-        string referencia
-        datetime data_pagament
+        enum estat
     }
-
     ACCESSOS {
-        int id_acces PK
-        int id_parquing FK
-        string matricula
+        bigint id_acces PK
+        int id_lector FK
+        varchar matricula_llegida
+        int id_vehicle FK
         int id_reserva FK
-        string tipus
         datetime data_hora
         bool barrera_oberta
-        string motiu_denegacio
-    }
-
-    TARIFES {
-        int id_tarifa PK
-        string concepte
-        decimal preu
-        bool actiu
+        enum motiu
     }
 ```
 
----
-
-## 2. Entitats principals
-
-### 2.1 `clients`
-
-Almacena las dades dels usuaris registrats. El mateix taula serveix per a clients i administradors mitjançant el camp `es_admin`.
-
-| Camp | Tipus | Claus / restriccions | Descripció |
-|---|---|---|---|
-| `id_client` | INT | **PK**, AUTO_INCREMENT | Identificador del client. |
-| `nom` | VARCHAR(50) | NOT NULL | Nom. |
-| `primer_cognom` | VARCHAR(50) | NOT NULL | Primer cognom. |
-| `segon_cognom` | VARCHAR(50) | NULL | Segon cognom (opcional). |
-| `email` | VARCHAR(120) | **UNIQUE**, NOT NULL | Correu d'accés. |
-| `telefon` | VARCHAR(20) | NULL | Telèfon de contacte. |
-| `password_hash` | VARCHAR(255) | NOT NULL | Hash de la contrasenya (bcrypt). |
-| `es_admin` | BOOLEAN | DEFAULT 0 | Marca si l'usuari és administrador. |
-| `actiu` | BOOLEAN | DEFAULT 1 | Permet desactivar comptes. |
-| `data_registre` | DATETIME | NULL | Data de registre. |
-
-### 2.2 `vehicles`
-
-Emmagatzema les dades dels vehicles de cada client.
-
-| Camp | Tipus | Claus / restriccions | Descripció |
-|---|---|---|---|
-| `id_vehicle` | INT | **PK**, AUTO_INCREMENT | Identificador del vehicle. |
-| `id_client` | INT | **FK → clients.id_client** | Propietari del vehicle. |
-| `matricula` | VARCHAR(10) | **UNIQUE**, NOT NULL | Matrícula normalitzada (ex. `1234ABC`). |
-| `marca` | VARCHAR(50) | NOT NULL | Marca del vehicle. |
-| `model` | VARCHAR(50) | NOT NULL | Model del vehicle. |
-
-### 2.3 `parquings`
-
-Informació dels pàrquings municipals.
-
-| Camp | Tipus | Claus / restriccions | Descripció |
-|---|---|---|---|
-| `id_parquing` | INT | **PK**, AUTO_INCREMENT | Identificador del pàrquing. |
-| `nom` | VARCHAR(80) | NOT NULL | Nom comercial. |
-| `ubicacio` | VARCHAR(200) | NOT NULL | Adreça o ubicació. |
-| `places_totals` | INT | NOT NULL | Nombre total de places físiques. |
-| `places_reservables` | INT | NOT NULL | Nombre de places que es poden reservar en línia. |
-| `actiu` | BOOLEAN | DEFAULT 1 | Si el pàrquing està operatiu. |
-
-### 2.4 `places`
-
-Les places reservables de cada pàrquing (gestió de places disponibles).
-
-| Camp | Tipus | Claus / restriccions | Descripció |
-|---|---|---|---|
-| `id_placa` | INT | **PK**, AUTO_INCREMENT | Identificador de la plaça. |
-| `id_parquing` | INT | **FK → parquings.id_parquing** | Pàrquing al qual pertany. |
-| `codi_placa` | VARCHAR(20) | NOT NULL, UNIQUE(id_parquing) | Codi de la plaça (ex. `P1-A01`). |
-| `tipus` | ENUM | `general`, `mobilitat_reduida`, `electric` | Tipus de plaça. |
-| `estat` | ENUM | `lliure`, `reservada`, `ocupada` | Estat actual de la plaça. |
-
-### 2.5 `reserves`
-
-Informació completa de cada reserva.
-
-| Camp | Tipus | Claus / restriccions | Descripció |
-|---|---|---|---|
-| `id_reserva` | INT | **PK**, AUTO_INCREMENT | Identificador de la reserva. |
-| `numero_reserva` | VARCHAR(14) | **UNIQUE**, NOT NULL | Número de reserva auto-generat (ex. `TPK-20261015-000123`). |
-| `id_client` | INT | **FK → clients.id_client** | Client que fa la reserva. |
-| `id_vehicle` | INT | **FK → vehicles.id_vehicle** | Vehicle de la reserva. |
-| `id_parquing` | INT | **FK → parquings.id_parquing** | Pàrquing reservat. |
-| `id_placa` | INT | **FK → places.id_placa**, NULL | Plaça assignada (opcional a l'inici). |
-| `data` | DATE | NOT NULL | Dia de la reserva. |
-| `hora_entrada` | TIME | NOT NULL | Hora d'entrada. |
-| `hora_sortida` | TIME | NOT NULL | Hora de sortida. |
-| `preu_base` | DECIMAL(10,2) | NOT NULL | Import calculat amb les tarifes (màx. 4,00 €/dia). |
-| `despeses_gestio` | DECIMAL(10,2) | NOT NULL | 10% del preu base. |
-| `preu_total` | DECIMAL(10,2) | NOT NULL | `preu_base + despeses_gestio`. |
-| `estat` | ENUM | `pendent`, `confirmada`, `cancel·lada`, `completada` | Estat de la reserva. |
-| `condicions_acceptades` | BOOLEAN | DEFAULT 0 | L'usuari ha acceptat les condicions. |
-| `pdf_path` | VARCHAR(255) | NULL | Ruta del PDF de confirmació generat. |
-| `creada_a` | DATETIME | NULL | Data de creació de la reserva. |
-
-### 2.6 `pagaments`
-
-Registre dels pagaments de cada reserva.
-
-| Camp | Tipus | Claus / restriccions | Descripció |
-|---|---|---|---|
-| `id_pagament` | INT | **PK**, AUTO_INCREMENT | Identificador del pagament. |
-| `id_reserva` | INT | **FK → reserves.id_reserva**, UNIQUE | Reserva associada (1 reserva = 1 pagament). |
-| `metode` | ENUM | `targeta`, `paypal`, `apple_pay` | Mètode de pagament. |
-| `import` | DECIMAL(10,2) | NOT NULL | Import pagat. |
-| `estat` | ENUM | `pendent`, `processat`, `reemborsat` | Estat del pagament. |
-| `referencia` | VARCHAR(100) | NULL | Referència de la passarel·la de pagament. |
-| `data_pagament` | DATETIME | NULL | Data del pagament. |
-
-### 2.7 `accessos`
-
-Registre d'entrades i sortides generat pel lector de matrícules (control d'accés).
-
-| Camp | Tipus | Claus / restriccions | Descripció |
-|---|---|---|---|
-| `id_acces` | INT | **PK**, AUTO_INCREMENT | Identificador de l'accés. |
-| `id_parquing` | INT | **FK → parquings.id_parquing** | Pàrquing on s'ha registrat. |
-| `matricula` | VARCHAR(10) | NOT NULL | Matrícula detectada pel lector. |
-| `id_reserva` | INT | **FK → reserves.id_reserva**, NULL | Reserva associada (si n'hi ha). |
-| `tipus` | ENUM | `entrada`, `sortida` | Tipus de moviment. |
-| `data_hora` | DATETIME | NOT NULL | Moment de la detecció. |
-| `barrera_oberta` | BOOLEAN | NOT NULL | Si la barrera s'ha obert. |
-| `motiu_denegacio` | VARCHAR(100) | NULL | Motiu si la barrera no s'ha obert (sense reserva, parc ple, etc.). |
-
-### 2.8 `tarifes`
-
-Configuració de les tarifes (editable per l'administrador sense tocar el codi).
-
-| Camp | Tipus | Claus / restriccions | Descripció |
-|---|---|---|---|
-| `id_tarifa` | INT | **PK**, AUTO_INCREMENT | Identificador de la tarifa. |
-| `concepte` | VARCHAR(60) | NOT NULL | Ex. `1a hora`, `2a hora`, `3a hora`, `màxim diari`, `nocturna`. |
-| `preu` | DECIMAL(10,2) | NOT NULL | Preu en euros. |
-| `actiu` | BOOLEAN | DEFAULT 1 | Si la tarifa està en vigor. |
+> Versió visual del diagrama (per a la presentació): [`06-diagramas.html`](06-diagramas.html).
 
 ---
 
-## 3. Relacions entre entitats
+## 3. Descripció de les taules
+
+### Bloc 1 · Usuaris, rols i clients
+
+#### `rols`
+Catàleg de rols. És una taula (i no un ENUM) perquè en el futur es puguin afegir rols nous (p. ex. *comptable*) sense modificar l'estructura.
+
+| Camp | Tipus | Restriccions | Descripció |
+|---|---|---|---|
+| `id_rol` | TINYINT UNSIGNED | **PK** | |
+| `codi` | VARCHAR(20) | **UNIQUE** | `client`, `operador`, `admin` |
+| `nom`, `descripcio` | VARCHAR | | Text per a la interfície |
+
+#### `usuaris`
+Credencials d'accés **comunes a tots els rols**. Separar-les de les dades personals permet que un administrador o operador no hagi de tenir DNI, vehicles, etc.
+
+| Camp | Tipus | Restriccions | Descripció |
+|---|---|---|---|
+| `id_usuari` | INT UNSIGNED | **PK** | |
+| `id_rol` | TINYINT | **FK → rols** | Rol de l'usuari |
+| `email` | VARCHAR(120) | **UNIQUE**, CHECK format | Usuari d'accés |
+| `password_hash` | VARCHAR(255) | NOT NULL | Hash **bcrypt** (`password_hash()` de PHP). Mai la contrasenya en clar |
+| `email_verificat`, `token_verificacio`, `token_caducitat` | | | Verificació d'email i recuperació de contrasenya |
+| `intents_fallits`, `bloquejat_fins` | | | Bloqueig temporal contra atacs de força bruta |
+| `actiu` | BOOLEAN | DEFAULT 1 | Baixa lògica (els usuaris no s'esborren) |
+| `ultim_acces`, `creat_a`, `actualitzat_a` | DATETIME | | Traçabilitat |
+
+#### `clients`
+Dades personals dels usuaris amb rol `client` (relació **1:1** amb `usuaris`).
+
+| Camp | Tipus | Restriccions | Descripció |
+|---|---|---|---|
+| `id_client` | INT UNSIGNED | **PK** | |
+| `id_usuari` | INT UNSIGNED | **FK → usuaris**, **UNIQUE** | Garanteix l'1:1 |
+| `nom`, `primer_cognom`, `segon_cognom` | VARCHAR(50) | | |
+| `dni_xifrat` | VARBINARY(255) | NOT NULL | **DNI xifrat amb AES**. La clau és al fitxer de configuració de la web, no a la BD |
+| `dni_hash` | CHAR(64) | **UNIQUE** | SHA-256 (clau + DNI): permet saber si el DNI ja existeix sense desxifrar-lo |
+| `telefon`, `data_naixement`, `adreca`, `codi_postal`, `poblacio` | | CHECK CP 5 dígits | Dades de contacte |
+| `consentiment_rgpd` | DATETIME | NOT NULL | Quan va acceptar la política de privacitat (RGPD) |
+
+#### `vehicles`
+| Camp | Tipus | Restriccions | Descripció |
+|---|---|---|---|
+| `id_vehicle` | INT UNSIGNED | **PK** | |
+| `id_client` | INT UNSIGNED | **FK → clients** | Propietari |
+| `matricula` | VARCHAR(10) | CHECK `^[A-Z0-9]{4,10}$` | Normalitzada (sense espais ni guions) per al lector |
+| `marca`, `model`, `color` | VARCHAR | | |
+| `tipus` | ENUM | `turisme`, `moto`, `furgoneta` | |
+| `es_electric` | BOOLEAN | | Per assignar places amb carregador |
+| `actiu` | BOOLEAN | | Baixa lògica: el vehicle no s'esborra perquè té reserves antigues |
+| `matricula_activa` | VARCHAR(10) | **UNIQUE**, columna generada | = `matricula` si està actiu, `NULL` si no. Així **només hi pot haver un vehicle actiu per matrícula**, però si es ven el cotxe, el nou propietari el pot registrar |
+
+#### `metodes_pagament`
+L'enunciat demana que l'usuari tingui **mètodes de pagament**. Per seguretat (normativa **PCI-DSS**) **mai es guarda el número complet de la targeta ni el CVV**: només el *token* que retorna la passarel·la de pagament i els 4 últims dígits per mostrar-los.
+
+| Camp | Tipus | Restriccions | Descripció |
+|---|---|---|---|
+| `id_metode` | INT UNSIGNED | **PK** | |
+| `id_client` | INT UNSIGNED | **FK → clients** | |
+| `tipus` | ENUM | `targeta`, `paypal`, `bizum` | |
+| `titular`, `marca_targeta`, `ultims_digits`, `caducitat_mes`, `caducitat_any` | | CHECKs | Dades visibles de la targeta |
+| `email_compte` / `telefon_compte` | | | PayPal / Bizum |
+| `token_passarela` | VARCHAR(255) | NOT NULL | Referència opaca per cobrar |
+| `predeterminat`, `actiu` | BOOLEAN | | |
+
+### Bloc 2 · Pàrquings
+
+#### `parquings`
+| Camp | Tipus | Restriccions | Descripció |
+|---|---|---|---|
+| `id_parquing` | INT UNSIGNED | **PK** | |
+| `nom` | VARCHAR(80) | **UNIQUE** | |
+| `adreca`, `codi_postal`, `poblacio` | | | |
+| `latitud`, `longitud` | DECIMAL(9,6) | | Per mostrar-lo al mapa de la web |
+| `obert_24h`, `hora_obertura`, `hora_tancament` | | CHECK coherència | Horari |
+| `places_totals` | SMALLINT | CHECK > 0 | Places físiques totals (reservables + rotació) |
+| `actiu` | BOOLEAN | | Desactivar sense esborrar |
+
+> Les **places reservables** ja no es guarden com un número (a la v1 `places_reservables` podia no coincidir amb les places reals): es **calculen** comptant les files de `places` amb `reservable = 1` (vista `v_disponibilitat_parquings`).
+
+#### `operadors_parquings` (relació N:M)
+Un operador pot gestionar diversos pàrquings i un pàrquing pot tenir diversos operadors. PK composta `(id_usuari, id_parquing)`.
+
+#### `places`
+| Camp | Tipus | Restriccions | Descripció |
+|---|---|---|---|
+| `id_placa` | INT UNSIGNED | **PK** | |
+| `id_parquing` | INT UNSIGNED | **FK → parquings** | |
+| `codi_placa` | VARCHAR(20) | **UNIQUE (id_parquing, codi_placa)** | Ex. `P1-A01` |
+| `planta` | TINYINT | | -1, -2… |
+| `tipus` | ENUM | `general`, `mobilitat_reduida`, `electric`, `moto`, `familiar` | |
+| `reservable` | BOOLEAN | | L'admin decideix quines places es poden reservar en línia |
+| `estat` | ENUM | `operativa`, `fora_servei` | **Estat físic**. L'ocupació per franges horàries es calcula a partir de `reserves` (a la v1 un camp `lliure/reservada/ocupada` no podia representar reserves en hores diferents) |
+
+#### `lectors`
+Lectors de matrícules (càmera + barrera). Cada pàrquing té com a mínim un d'**entrada** i un de **sortida**. Guarda el `codi` i l'`adreca_ip` del dispositiu.
+
+#### `tarifes`
+| Camp | Tipus | Restriccions | Descripció |
+|---|---|---|---|
+| `id_tarifa` | INT UNSIGNED | **PK** | |
+| `id_parquing` | INT UNSIGNED | **FK → parquings**, NULL | `NULL` = tarifa general. Permet en el futur tarifes pròpies d'un pàrquing |
+| `codi` | ENUM | `hora_1_2`, `hora_3_endavant`, `maxim_diari`, `nocturna` | |
+| `preu` | DECIMAL(6,2) | CHECK ≥ 0 | |
+| `vigent_des`, `vigent_fins` | DATE | CHECK | **Històric de preus**: per canviar un preu es tanca la tarifa antiga i se'n crea una de nova |
+
+#### `configuracio`
+Parells clau/valor: `despeses_gestio_pct = 10`, `nit_inici = 22:00`, `nit_fi = 06:00`, marges de cortesia… Es poden canviar des del panell sense tocar codi.
+
+#### `condicions`
+Versions de les condicions d'ús. Cada reserva guarda **quina versió** va acceptar el client i **quan** (valor legal).
+
+### Bloc 3 · Reserves, pagaments i accessos
+
+#### `reserves`
+| Camp | Tipus | Restriccions | Descripció |
+|---|---|---|---|
+| `id_reserva` | INT UNSIGNED | **PK** | |
+| `numero_reserva` | VARCHAR(20) | **UNIQUE**, CHECK `TPK-AAAAMMDD-NNNNNN` | Número que surt al PDF |
+| `id_client` | | **FK → clients** | |
+| `id_vehicle` | | **FK composta (id_vehicle, id_client) → vehicles** | La BD garanteix que el vehicle **és del client** |
+| `id_parquing` | | **FK → parquings** | |
+| `id_placa` | | **FK composta (id_placa, id_parquing) → places**, NULL | La plaça ha de ser **del mateix pàrquing** |
+| `id_metode` | | **FK composta (id_metode, id_client) → metodes_pagament** | El mitjà de pagament ha de ser **del client**; es fa servir també per cobrar l'excés |
+| `id_condicions` | | **FK → condicions** | Versió acceptada |
+| `data_hora_entrada`, `data_hora_sortida` | DATETIME | CHECK sortida > entrada | A la v1 eren `data` + `TIME`, i no es podien fer reserves nocturnes que passen de dia (22:30 → 00:30) |
+| `preu_base`, `despeses_gestio`, `preu_total` | DECIMAL(8,2) | CHECK total = base + gestió | **Foto del preu** en el moment de reservar |
+| `estat` | ENUM | `pendent`, `confirmada`, `en_curs`, `completada`, `cancelada`, `no_presentat` | Veure diagrama d'estats a l'esquema funcional |
+| `condicions_acceptades_a` | DATETIME | NOT NULL | |
+| `motiu_cancelacio` | VARCHAR(255) | CHECK obligatori si `cancelada` | |
+| `pdf_path`, `creada_a`, `actualitzada_a` | | | |
+
+#### `reserves_historial`
+Auditoria **automàtica** (triggers): cada creació, canvi d'estat o modificació de dates/vehicle/plaça queda registrada amb **qui** ho ha fet i **quan**. Compleix el requisit "*accés segur a les dades de les reserves*" i permet saber quin administrador ha modificat una reserva.
+
+#### `pagaments`
+Relació **1:N** amb `reserves` (a la v1 era 1:1 i no es podia registrar el cobrament de l'excés de temps):
+
+| `tipus` | Quan es crea |
+|---|---|
+| `reserva` | En confirmar la reserva |
+| `exces` | A la sortida, si el vehicle ha superat l'hora reservada |
+| `reemborsament` | Si l'administrador cancel·la i retorna l'import |
+
+#### `accessos`
+Cada lectura de matrícula d'un lector: matrícula llegida, vehicle i reserva (si n'hi ha), si s'ha obert la barrera i el **motiu** (`reserva_valida`, `places_lliures`, `sense_reserva`, `parquing_ple`, `fora_horari`, `no_llegible`, `sortida`, `sortida_amb_exces`) i els minuts d'excés.
+
+---
+
+## 4. Relacions i cardinalitats
 
 | Relació | Cardinalitat | Explicació |
 |---|---|---|
-| `clients` – `vehicles` | 1 : N | Un client pot tenir **diversos vehicles**; un vehicle pertany a un únic client. |
-| `clients` – `reserves` | 1 : N | Un client pot tenir **múltiples reserves**; una reserva pertany a un únic client. |
-| `vehicles` – `reserves` | 1 : N | Un vehicle pot aparèixer en moltes reserves; **cada reserva està associada a un únic vehicle**. |
-| `parquings` – `places` | 1 : N | Un pàrquing conté **moltes places**; cada plaça pertany a un únic pàrquing. |
-| `parquings` – `reserves` | 1 : N | Un pàrquing atén **moltes reserves**; **cada reserva està associada a un únic pàrquing**. |
-| `places` – `reserves` | 1 : N | Una plaça pot ser assignada a **una reserva activa** i, amb el temps, a **diverses reserves**; cada reserva té opcionalment **una única plaça**. |
-| `reserves` – `pagaments` | 1 : 1 | **Cada reserva té un únic pagament** i cada pagament pertany a una única reserva. |
-| `parquings` – `accessos` | 1 : N | Un pàrquing registra **molts accessos** (entrades/sortides). |
-| `reserves` – `accessos` | 1 : N | Una reserva pot generar **diversos accessos** (entrada i sortida); un accés pot no tenir reserva (vehicle no registrat). |
+| `rols` – `usuaris` | 1 : N | Cada usuari té un rol |
+| `usuaris` – `clients` | 1 : 0..1 | Només els usuaris amb rol client tenen fitxa de client |
+| `usuaris` – `parquings` (via `operadors_parquings`) | **N : M** | Operadors assignats a pàrquings |
+| `clients` – `vehicles` | 1 : N | **Un client pot tenir diversos vehicles** (requisit) |
+| `clients` – `metodes_pagament` | 1 : N | Un client pot desar diversos mitjans de pagament |
+| `clients` – `reserves` | 1 : N | **Un client pot tenir múltiples reserves** (requisit) |
+| `vehicles` – `reserves` | 1 : N | **Cada reserva està associada a un vehicle** (requisit) |
+| `parquings` – `reserves` | 1 : N | **Cada reserva està associada a un pàrquing** (requisit) |
+| `parquings` – `places` | 1 : N | Un pàrquing té moltes places |
+| `places` – `reserves` | 0..1 : N | Una reserva pot tenir plaça assignada; una plaça s'usa en moltes reserves (en hores diferents) |
+| `parquings` – `lectors` | 1 : N | Lectors d'entrada i sortida |
+| `parquings` – `tarifes` | 0..1 : N | Tarifes generals (NULL) o específiques |
+| `condicions` – `reserves` | 1 : N | Versió acceptada |
+| `reserves` – `pagaments` | 1 : N | Pagament inicial + excessos + reemborsaments |
+| `metodes_pagament` – `pagaments` | 1 : N | |
+| `reserves` – `reserves_historial` | 1 : N | Auditoria |
+| `lectors` – `accessos` | 1 : N | |
+| `reserves` / `vehicles` – `accessos` | 0..1 : N | Un accés pot no tenir reserva (vehicle de rotació) |
 
 ---
 
-## 4. Claus primàries i foranes (resum)
+## 5. Claus primàries i foranes
 
-| Taula | Clau primària (PK) | Clau forana (FK) | Referència |
-|---|---|---|---|
-| `clients` | `id_client` | — | — |
-| `vehicles` | `id_vehicle` | `id_client` | `clients.id_client` |
-| `parquings` | `id_parquing` | — | — |
-| `places` | `id_placa` | `id_parquing` | `parquings.id_parquing` |
-| `reserves` | `id_reserva` | `id_client` | `clients.id_client` |
-|  |  | `id_vehicle` | `vehicles.id_vehicle` |
-|  |  | `id_parquing` | `parquings.id_parquing` |
-|  |  | `id_placa` | `places.id_placa` |
-| `pagaments` | `id_pagament` | `id_reserva` | `reserves.id_reserva` |
-| `accessos` | `id_acces` | `id_parquing` | `parquings.id_parquing` |
-|  |  | `id_reserva` | `reserves.id_reserva` |
-| `tarifes` | `id_tarifa` | — | — |
+| Taula | PK | FK → referència |
+|---|---|---|
+| `rols` | `id_rol` | — |
+| `usuaris` | `id_usuari` | `id_rol` → `rols` |
+| `clients` | `id_client` | `id_usuari` → `usuaris` (UNIQUE ⇒ 1:1) |
+| `vehicles` | `id_vehicle` | `id_client` → `clients` |
+| `metodes_pagament` | `id_metode` | `id_client` → `clients` |
+| `parquings` | `id_parquing` | — |
+| `operadors_parquings` | (`id_usuari`, `id_parquing`) | `id_usuari` → `usuaris`; `id_parquing` → `parquings` |
+| `places` | `id_placa` | `id_parquing` → `parquings` |
+| `lectors` | `id_lector` | `id_parquing` → `parquings` |
+| `tarifes` | `id_tarifa` | `id_parquing` → `parquings` (NULL) |
+| `configuracio` | `clau` | — |
+| `condicions` | `id_condicions` | — |
+| `reserves` | `id_reserva` | `id_client` → `clients`; (`id_vehicle`, `id_client`) → `vehicles`; `id_parquing` → `parquings`; (`id_placa`, `id_parquing`) → `places`; (`id_metode`, `id_client`) → `metodes_pagament`; `id_condicions` → `condicions` |
+| `reserves_historial` | `id_historial` | `id_reserva` → `reserves`; `id_usuari` → `usuaris` |
+| `pagaments` | `id_pagament` | `id_reserva` → `reserves`; `id_metode` → `metodes_pagament` |
+| `accessos` | `id_acces` | `id_lector` → `lectors`; `id_vehicle` → `vehicles`; `id_reserva` → `reserves` |
 
----
-
-## 5. Justificació del disseny
-
-- **Normalització:** el model està en **3FN** (Tercera Forma Normal): no hi ha dependències transitives ni dades repetides.
-- **Un client, molts vehicles, moltes reserves:** es compleix l'especificació de relacions mínimes del projecte (1 client → N vehicles, 1 client → N reserves, 1 reserva → 1 pàrquing i 1 reserva → 1 vehicle).
-- **Matrícula única:** `vehicles.matricula` és UNIQUE, cosa que permet al **lector de matrícules** buscar ràpidament si aquella placa té una reserva activa.
-- **Reserves que no s'eliminen:** el camp `estat` amb el valor `cancel·lada` permet conservar l'històric i complir el requisit de "les reserves no s'eliminaran".
-- **Tarifes configurables:** la taula `tarifes` separada permet canviar els preus des de l'administració sense modificar el codi.
-- **Auditoria d'accessos:** la taula `accessos` emmagatzema cada entrada/sortida, necessària per controlar l'ocupació, detectar excedents i calcular cobraments addicionals.
-- **Pagament separat:** la taula `pagaments` permet portar el control econòmic independent de la reserva i fer reemborsaments.
+**Política `ON DELETE`:** gairebé tot és `RESTRICT`. Com que les dades importants **no s'esborren mai** (baixa lògica amb `actiu` o estat `cancelada`), no es perd cap històric. Només `operadors_parquings` usa `CASCADE` (és una taula de relació).
 
 ---
 
-## 6. Documents relacionats
+## 6. Regles de negoci garantides per la base de dades
 
-- `01-esquema-funcional.md` — Casos d'ús i fluxos de l'aplicació.
-- `03-modelo-er.sql` — Script DDL per crear la base de dades en MySQL/MariaDB.
-- `04-planificacion.md` — Planificació del projecte.
-- `06-diagramas.html` — Diagrames renderitzats.
+| Regla (enunciat) | Com la garanteix la BD |
+|---|---|
+| Les reserves **no es poden eliminar**, només cancel·lar | Trigger `trg_reserves_no_delete` (també a `pagaments`, `accessos` i `reserves_historial`) |
+| Una reserva cancel·lada / completada no torna enrere | Trigger `trg_reserves_bu` |
+| No sobrepassar les **places reservables** | Trigger `trg_reserves_bi` compta reserves solapades vs. places reservables operatives |
+| Un vehicle no pot tenir dues reserves a la mateixa hora | Trigger `trg_reserves_bi` |
+| Una plaça no es pot assignar dues vegades a la mateixa franja | Trigger `trg_reserves_bi` |
+| El vehicle i el mitjà de pagament són del client | FK compostes |
+| Total = base + 10 % | CHECK `chk_reserves_preus` (el càlcul el fa el PHP) |
+| Registre de qui modifica una reserva | Triggers `trg_reserves_ai` / `trg_reserves_au` → `reserves_historial` |
+| Dades sensibles protegides | DNI xifrat (AES) + hash; contrasenya bcrypt; targetes tokenitzades |
+
+**Vistes:**
+- `v_disponibilitat_parquings`: places reservables, reserves actives ara i vehicles dins, per pàrquing.
+- `v_reserves_detall`: totes les dades d'una reserva en una fila (client, email, matrícula, pàrquing, plaça, excés cobrat). És la base de la **cerca avançada** de l'administrador.
+- `v_reserves_vigents`: el que consulta el **lector de matrícules** per decidir si obre la barrera.
+
+**Usuaris de la BD (mínim privilegi, Sprint 2):**
+
+| Usuari MySQL | Permisos |
+|---|---|
+| `tp_web` | `SELECT, INSERT, UPDATE` a les taules, **sense `DELETE`** ni `DROP` |
+| `tp_lector` | `SELECT` a `v_reserves_vigents`, `vehicles`, `lectors`; `INSERT` a `accessos`; `UPDATE` d'estat a `reserves` |
+| `tp_backup` | `SELECT, LOCK TABLES, SHOW VIEW, TRIGGER, EVENT` (per a `mysqldump` / `mariabackup`) |
+| `root` | Només en local, mai des de la web |
+
+---
+
+## 7. Canvis respecte la versió 1 (millores demanades pel professor)
+
+| # | Problema de la v1 | Solució a la v2 |
+|---|---|---|
+| 1 | `numero_reserva VARCHAR(14)`, però el format `TPK-20261015-000123` té 19 caràcters → l'INSERT fallava | `VARCHAR(20)` + CHECK del format |
+| 2 | `data` + `hora_entrada`/`hora_sortida` (TIME) amb `CHECK sortida > entrada` → **impossible** reservar de 22:30 a 00:30 o diversos dies | `data_hora_entrada` / `data_hora_sortida` DATETIME |
+| 3 | No hi havia **mètodes de pagament** de l'usuari (els demana l'enunciat) | Taula `metodes_pagament` tokenitzada |
+| 4 | `pagaments` 1:1 → no es podia cobrar l'**excés de temps** | `pagaments` 1:N amb `tipus` |
+| 5 | Només `es_admin` → no hi cabien altres rols (Sprint 2 demana "*altres rols*") | Taula `rols` + `usuaris` / `clients` separats + operadors N:M |
+| 6 | Dades sensibles en clar, sense DNI | DNI xifrat + hash, RGPD, bloqueig per intents |
+| 7 | `places.estat` (`lliure/reservada/ocupada`) contradeia les reserves per franges | Estat físic + disponibilitat calculada (vista) |
+| 8 | `places_reservables` com a número podia no coincidir amb les places reals | Es calcula a partir de `places.reservable` |
+| 9 | Res impedia esborrar reserves ni solapar-les | Triggers |
+| 10 | Un vehicle d'un altre client es podia posar a la reserva | FK compostes |
+| 11 | No hi havia auditoria de canvis | `reserves_historial` |
+| 12 | Tarifes sense històric ni per pàrquing; % de gestió al codi | `tarifes` amb vigència + `configuracio` |
+| 13 | `accessos` sense dispositiu | Taula `lectors` |
+| 14 | Hash de contrasenyes de prova falsos (`CANVIAR_A_UN_HASH_REAL`) | Hash bcrypt reals |
+| 15 | Valor ENUM `cancel·lada` (caràcter `·` problemàtic) i índex duplicat a `matricula` | `cancelada`; índexs revisats |
+
+---
+
+## 8. Normalització (3FN)
+
+- **1FN:** tots els camps són atòmics (nom i cognoms separats, adreça separada en adreça / CP / població).
+- **2FN:** les taules amb PK composta (`operadors_parquings`) no tenen atributs que depenguin d'una part de la clau.
+- **3FN:** no hi ha dependències transitives: el rol és a `rols`, el preu de cada concepte és a `tarifes`, el % de gestió a `configuracio`.
+- **Desnormalització conscient:** `reserves.preu_*` guarda el preu cobrat (si demà canvia la tarifa, la reserva d'ahir ha de mantenir el seu preu). `accessos.matricula_llegida` guarda el que va llegir la càmera encara que el vehicle no estigui registrat.
+
+---
+
+## 9. Escalabilitat (preparada per créixer)
+
+- Nous **rols** → una fila a `rols`.
+- Nous **pàrquings, places, lectors** → només dades.
+- **Tarifes diferents per pàrquing** o canvis de preu → `tarifes.id_parquing` + vigència.
+- Nous **mètodes de pagament** → valor nou a l'ENUM / passarel·la.
+- `BIGINT` a `accessos` i `reserves_historial`, que són les taules que creixeran més.
+- Índexs a les consultes freqüents: matrícula + data (lector), estat + dates i pàrquing + dates (disponibilitat).
+
+---
+
+## 10. Documents relacionats
+
+- `01-esquema-funcional.md` — Casos d'ús, fluxos i càlcul de tarifes.
+- `03-modelo-er.sql` — Script de creació (taules, triggers, vistes, seed).
+- `04-planificacion.md` — Planificació.
+- `06-diagramas.html` — Diagrames per a la presentació.

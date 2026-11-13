@@ -1,322 +1,414 @@
-# Sprint 1 — Esquema funcional
+# Sprint 1 — Esquema funcional de l'aplicatiu (v2)
 
 ## Sistema de Reserves de Places de Pàrquing · Tarraco Parkings (Tarragona)
 
-**Projecte:** Sistema de Reserves de Places de Pàrquing per a la ciutat de Tarragona
-**Empresa:** Tarraco Parkings
-**Stack:** PHP + MariaDB/MySQL + Apache2 (servidor GNU/Linux)
-**Fase:** Sprint 1 · Anàlisi i disseny
+**Equip:** Carlos · Sara · Joel
+**Stack:** GNU/Linux (Ubuntu Server) · Apache2 · PHP 8 · MariaDB · phpMyAdmin · Zabbix
+**Fase:** Sprint 1 · Anàlisi i disseny (revisió v2)
 
 ---
 
 ## 1. Objectiu de l'aplicació
 
-Desenvolupar un sistema en línia que permeti als usuaris reservar una plaça de pàrquing
-de qualsevol pàrquing municipal de Tarragona, gestionar el seu perfil i vehicles, pagar la
-reserva, i desplaçar-se al pàrquing on el lector de matrícules controlarà l'entrada i la
-sortida automàticament.
+Tarraco Parkings gestiona els pàrquings municipals de Tarragona i vol un sistema en línia per:
 
-L'aplicació tindrà **dues interfícies**:
-
-- **Front-web d'usuaris finals:** reserva, perfil, vehicles, consulta de reserves i PDF.
-- **Panel d'administració:** gestió de pàrquings, places, reserves, clients i consultes avançades.
-
-L'obertura de barreres es fa mitjançant un procés automàtic que detecta la **matrícula**
-(no cal que l'usuari faci cap acció a l'app el dia de la reserva).
+1. Que els **clients** reservin una plaça (pàrquing, data, hora d'entrada i sortida) amb el **preu calculat automàticament** (+10 % de despeses de gestió), acceptant les condicions i pagant amb un mitjà desat al seu perfil.
+2. Que el **lector de matrícules** obri la barrera automàticament si la matrícula té una reserva activa (o si hi ha places lliures) i **cobri l'excés de temps** amb el mateix mitjà de pagament.
+3. Que els **administradors** donin d'alta pàrquings i places, i vegin, cerquin i modifiquin totes les reserves (**mai esborrar-les**, només cancel·lar-les).
+4. Que les dades estiguin **protegides** (HTTPS, contrasenyes xifrades, dades sensibles xifrades, còpies de seguretat, monitoratge).
 
 ---
 
-## 2. Actors del sistema
+## 2. Parts de l'aplicació
 
-| Actor | Descripció |
-|---|---|
-| **Visitant** | Persona que accedeix a la web sense haver iniciat sessió. Pot veure informació dels pàrquings i registrar-se. |
-| **Client** | Usuari registrat i autenticat. Pots fer reserves, gestionar el seu perfil i vehicles, consultar reserves i descarregar el PDF. |
-| **Administrador** | Usuari amb rol d'administrador. Gestiona pàrquings, places, reserves, clients i consultes avançades. |
-| **Sistema automàtic** | Processos automàtics: càlcul de preus, generació de número de reserva, generació del PDF, lector de matrícules (barreres), cobrament addicional per excés de temps i còpies de seguretat. |
+| Part | Qui la fa servir | Què conté |
+|---|---|---|
+| **Web pública** | Visitant | Pàgina d'inici amb els pàrquings (mapa, adreça, places disponibles, tarifes), simulador de preu, registre i inici de sessió. |
+| **Àrea de client** | Client | Perfil (dades personals), vehicles, mètodes de pagament, formulari de reserva, les meves reserves, cancel·lació i PDF. |
+| **Panell d'operador** | Operador de pàrquing | Reserves del dia i accessos (entrades/sortides) **dels seus pàrquings**, ocupació en temps real. Només consulta i incidències. |
+| **Panell d'administració** | Administrador | Pàrquings, places, lectors, tarifes, condicions, totes les reserves (modificar / canviar estat / cancel·lar), cerca avançada, historial de canvis, usuaris i rols. |
+| **Servei del lector** | Sistema (lector de matrícules) | Endpoint PHP que rep la matrícula llegida per la càmera, decideix si s'obre la barrera i registra l'accés. Al projecte es simula amb una pantalla. |
+| **Processos automàtics** | Sistema | Càlcul de preus, número de reserva, PDF, cobrament d'excés, marcar reserves *no presentat*, còpies de seguretat, monitoratge. |
 
 ---
 
-## 3. Casos d'ús
-
-### 3.1 Diagrama de casos d'ús
+## 3. Arquitectura del sistema
 
 ```mermaid
 flowchart LR
-    %% Actores
-    V["🧍 Visitant"]
-    C["🧑 Client"]
-    A["🧑‍💼 Administrador"]
-    S["⚙️ Sistema automàtic"]
-
-    subgraph FRONT_USUARI["Interfície usuari"]
-        UC1["CU-01 Registrar-se"]
-        UC2["CU-02 Iniciar sessió"]
-        UC3["CU-03 Tancar sessió"]
-        UC4["CU-04 Recuperar contrasenya"]
-        UC5["CU-05 Gestionar perfil"]
-        UC6["CU-06 Alta / modificació de vehicles"]
-        UC7["CU-07 Consultar pàrquings"]
-        UC8["CU-08 Crear reserva"]
-        UC9["CU-09 Consultar reserves pròpies"]
-        UC10["CU-10 Cancel·lar reserva"]
-        UC11["CU-11 Descarregar PDF"]
-        UC12["CU-12 Entrada/ sortida al pàrquing"]
+    U["🧑 Navegador<br/>client / operador / admin"] -- "HTTPS 443" --> FW
+    L["📷 Lector de matrícules<br/>(simulat)"] -- "HTTPS (API)" --> FW
+    subgraph VB["PC amfitrió · VirtualBox · xarxa en mode pont"]
+        FW["UFW + fail2ban"]
+        FW --> WEB["srv-web<br/>Ubuntu Server · Apache2 + PHP 8<br/>SSL · RAID 1 (mdadm)"]
+        WEB -- "3306 (només des de srv-web)" --> DB["srv-db<br/>MariaDB + phpMyAdmin<br/>còpies completes + incrementals"]
+        MON["srv-monitor<br/>Zabbix"] -. "agent 10050" .-> WEB
+        MON -. "agent 10050" .-> DB
+        DB -- "còpies" --> BK[("Disc de còpies")]
     end
-
-    subgraph PANEL_ADMIN["Panel administració"]
-        UA1["CU-20 Iniciar sessió administrador"]
-        UA2["CU-21 Gestionar pàrquings"]
-        UA3["CU-22 Gestionar places"]
-        UA4["CU-23 Consultar reserves"]
-        UA5["CU-24 Modificar reserves"]
-        UA6["CU-25 Cancel·lar reserves (sense eliminar)"]
-        UA7["CU-26 Cerca avançada de reserves"]
-        UA8["CU-27 Gestió de clients registrats"]
-        UA9["CU-28 Consultar accessos i ocupació"]
-    end
-
-    subgraph AUTOMATIC["Processos automàtics"]
-        AS1["CU-30 Calcular preu (tarifes + 10%)"]
-        AS2["CU-31 Generar número de reserva"]
-        AS3["CU-32 Generar PDF de confirmació"]
-        AS4["CU-33 Control d'accés per matrícula"]
-        AS5["CU-34 Cobrar excés de temps"]
-    end
-
-    V --> UC1
-    V --> UC2
-    C --> UC2
-    C --> UC3
-    C --> UC4
-    C --> UC5
-    C --> UC6
-    C --> UC7
-    C --> UC8
-    C --> UC9
-    C --> UC10
-    C --> UC11
-    C --> UC12
-
-    A --> UA1
-    A --> UA2
-    A --> UA3
-    A --> UA4
-    A --> UA5
-    A --> UA6
-    A --> UA7
-    A --> UA8
-    A --> UA9
-
-    UC8 -.-> AS1
-    UC8 -.-> AS2
-    UC11 -.-> AS3
-    UC12 -.-> AS4
-    UC12 -.-> AS5
-    UA9 -.-> AS4
 ```
 
-### 3.2 Descripció dels casos d'ús (part d'usuari)
+| VM | Serveis | RAM | Disc |
+|---|---|---|---|
+| `srv-web` | Apache2, PHP 8, certificat SSL, UFW, fail2ban | 2 GB | 2 × 20 GB en **RAID 1** |
+| `srv-db` | MariaDB, phpMyAdmin (només accessible des de la xarxa interna), `mariabackup` + `cron` | 2 GB | 20 GB + 20 GB per a còpies |
+| `srv-monitor` | Zabbix server + web (alertes si cau un servei o el disc s'omple) | 2 GB | 15 GB |
+| `srv-web2` + HAProxy *(opcional)* | Redundància i balanceig de càrrega | 1–2 GB | 15 GB |
 
-| ID | Cas d'ús | Descripció | Requisit previ | Resultat |
-|---|---|---|---|---|
-| CU-01 | **Registrar-se** | El visitant crea un compte amb nom, cognoms, email, telèfon i contrasenya. | Cap | Compte creat i verificat per email. |
-| CU-02 | **Iniciar sessió** | El client autentica amb email + contrasenya. | Estar registrat | Sessió iniciada. |
-| CU-03 | **Tancar sessió** | El client finalitza la sessió. | Sessió iniciada | Sessió tancada. |
-| CU-04 | **Recuperar contrasenya** | El client sol·licita restablir la contrasenya per email. | Estar registrat | Email de recuperació enviat. |
-| CU-05 | **Gestionar perfil** | Consultar i modificar nom, cognoms, email i telèfon. | Sessió iniciada | Dades actualitzades. |
-| CU-06 | **Alta / modificació de vehicles** | Afegir, editar o eliminar vehicles (marca, model, matrícula). | Sessió iniciada | Vehicle desat / actualitzat. |
-| CU-07 | **Consultar pàrquings** | Veure llista de pàrquings, ubicació i places disponibles. | Cap (públic) | Llista de pàrquings. |
-| CU-08 | **Crear reserva** | Seleccionar pàrquing, data, hora d'entrada i sortida, vehicle i acceptar condicions. El sistema calcula el preu automàticament. | Sessió iniciada + vehicle donat d'alta | Reserva creada, número de reserva generat i pagament processat. |
-| CU-09 | **Consultar reserves pròpies** | Veure llista i detall de les seves reserves. | Sessió iniciada | Historial de reserves. |
-| CU-10 | **Cancel·lar reserva** | Marcar una reserva com a cancel·lada (no s'elimina). | Sessió iniciada + reserva activa | Reserva amb estat «cancel·lada». |
-| CU-11 | **Descarregar PDF** | Descarregar el PDF de confirmació d'una reserva. | Sessió iniciada + reserva confirmada | PDF generat. |
-| CU-12 | **Entrada / sortida al pàrquing** | El client arriba amb el vehicle; el lector de matrícules detecta la placa, comprova la reserva i obre la barrera. | Reserva confirmada i dins del període | Barrera oberta i accés registrat. |
+Les VM es fan amb **VirtualBox** a l'ordinador de l'equip (16 GB de RAM: 6–8 GB per a les VM). Es comparteixen entre els membres exportant-les en `.ova`, i el codi és al repositori de GitHub.
 
-### 3.3 Descripció dels casos d'ús (part d'administració)
+---
 
-| ID | Cas d'ús | Descripció | Requisit previ | Resultat |
-|---|---|---|---|---|
-| CU-20 | **Iniciar sessió administrador** | Autenticació de l'administrador al panel. | Usuari amb rol admin | Sessió admin iniciada. |
-| CU-21 | **Gestionar pàrquings** | Donar d'alta, editar o desactivar pàrquings (nom, ubicació, nombre de places). | Rol admin | Pàrquing creat / modificat. |
-| CU-22 | **Gestionar places** | Crear i editar places reservables (codi, tipus, estat) i el nombre de places disponibles. | Rol admin | Places actualitzades. |
-| CU-23 | **Consultar reserves** | Veure totes les reserves del sistema. | Rol admin | Llistat de reserves. |
-| CU-24 | **Modificar reserves** | Canviar dades o estat de qualsevol reserva. | Rol admin | Reserva modificada. |
-| CU-25 | **Cancel·lar reserves** | Marcar reserves com a cancel·lades. **No es poden eliminar.** | Rol admin | Reserva amb estat «cancel·lada». |
-| CU-26 | **Cerca avançada de reserves** | Filtrar per client, matrícula, pàrquing, data, estat, etc. | Rol admin | Resultats filtrats. |
-| CU-27 | **Gestió de clients** | Veure clients registrats, el seu estat i desactivar-los si cal. | Rol admin | Client gestionat. |
-| CU-28 | **Consultar accessos i ocupació** | Veure entrades/sortides registrades i ocupació en temps real. | Rol admin | Informe d'accessos i ocupació. |
+## 4. Actors
 
-### 3.4 Processos automàtics (Sistema)
+| Actor | Descripció |
+|---|---|
+| **Visitant** | No ha iniciat sessió. Pot consultar els pàrquings i les tarifes, simular un preu i registrar-se. |
+| **Client** | Usuari registrat. Ha de registrar-se per poder reservar (requisit de l'enunciat). Gestiona perfil, vehicles, mètodes de pagament i reserves. |
+| **Operador** | Treballador d'un pàrquing. Consulta reserves, accessos i ocupació dels pàrquings que té assignats. |
+| **Administrador** | Gestió completa del sistema. Hereta tot el que pot fer l'operador, per a tots els pàrquings. |
+| **Sistema** | Lector de matrícules, càlcul de preus, generació de documents, cobraments i tasques programades. |
+
+---
+
+## 5. Casos d'ús
+
+### 5.1 Diagrama de casos d'ús
+
+```mermaid
+flowchart LR
+    V["🧍 Visitant"]
+    C["🧑 Client"]
+    O["👷 Operador"]
+    A["🧑‍💼 Administrador"]
+    S["⚙️ Sistema / Lector"]
+
+    subgraph PUB["Web pública"]
+        CU01["CU-01 Consultar pàrquings i tarifes"]
+        CU02["CU-02 Simular preu"]
+        CU03["CU-03 Registrar-se"]
+        CU04["CU-04 Iniciar / tancar sessió"]
+        CU05["CU-05 Recuperar contrasenya"]
+    end
+
+    subgraph CLI["Àrea de client"]
+        CU10["CU-10 Gestionar perfil"]
+        CU11["CU-11 Gestionar vehicles"]
+        CU12["CU-12 Gestionar mètodes de pagament"]
+        CU13["CU-13 Crear reserva"]
+        CU14["CU-14 Consultar les meves reserves"]
+        CU15["CU-15 Cancel·lar reserva"]
+        CU16["CU-16 Descarregar PDF"]
+    end
+
+    subgraph OPE["Panell d'operador"]
+        CU20["CU-20 Veure reserves del dia del seu pàrquing"]
+        CU21["CU-21 Veure accessos i ocupació"]
+        CU22["CU-22 Obrir barrera manualment (incidència)"]
+    end
+
+    subgraph ADM["Panell d'administració"]
+        CU30["CU-30 Gestionar pàrquings, places i lectors"]
+        CU31["CU-31 Gestionar tarifes i condicions"]
+        CU32["CU-32 Consultar totes les reserves"]
+        CU33["CU-33 Modificar reserva / canviar estat"]
+        CU34["CU-34 Cancel·lar reserva (mai eliminar)"]
+        CU35["CU-35 Cerca avançada i estadístiques"]
+        CU36["CU-36 Gestionar usuaris i rols"]
+        CU37["CU-37 Consultar historial de canvis"]
+    end
+
+    subgraph SIS["Processos automàtics"]
+        CU40["CU-40 Calcular preu (+10 %)"]
+        CU41["CU-41 Generar número de reserva i PDF"]
+        CU42["CU-42 Control d'accés per matrícula"]
+        CU43["CU-43 Cobrar excés de temps"]
+        CU44["CU-44 Marcar reserves no presentades"]
+        CU45["CU-45 Còpies de seguretat i monitoratge"]
+    end
+
+    V --> CU01 & CU02 & CU03 & CU04
+    C --> CU04 & CU05 & CU10 & CU11 & CU12 & CU13 & CU14 & CU15 & CU16
+    O --> CU04 & CU20 & CU21 & CU22
+    A --> CU04 & CU20 & CU21 & CU30 & CU31 & CU32 & CU33 & CU34 & CU35 & CU36 & CU37
+    S --> CU42 & CU43 & CU44 & CU45
+
+    CU02 -. "include" .-> CU40
+    CU13 -. "include" .-> CU40
+    CU13 -. "include" .-> CU41
+    CU42 -. "extend" .-> CU43
+```
+
+### 5.2 Web pública i client
+
+| ID | Cas d'ús | Actor | Precondició | Flux principal | Resultat |
+|---|---|---|---|---|---|
+| CU-01 | Consultar pàrquings i tarifes | Visitant, Client | — | Llista / mapa amb adreça, horari, places reservables lliures i tarifes. | Informació mostrada |
+| CU-02 | Simular preu | Visitant, Client | — | Tria pàrquing i franja → el sistema calcula el preu (CU-40). | Preu orientatiu |
+| CU-03 | Registrar-se | Visitant | — | Nom, cognoms, DNI, telèfon, email, contrasenya (mín. 8 caràcters), accepta la política de privacitat (RGPD). | Compte de client creat (DNI xifrat, contrasenya amb bcrypt) |
+| CU-04 | Iniciar / tancar sessió | Tots | Compte actiu | Email + contrasenya. Després de 5 intents fallits, bloqueig de 15 min. Redirecció segons el rol. | Sessió iniciada |
+| CU-05 | Recuperar contrasenya | Client | Registrat | Envia un enllaç amb un *token* que caduca en 1 h. | Contrasenya nova |
+| CU-10 | Gestionar perfil | Client | Sessió | Consultar i modificar les dades personals i la contrasenya. | Dades actualitzades |
+| CU-11 | Gestionar vehicles | Client | Sessió | Alta (marca, model, matrícula, color, tipus, elèctric), edició i baixa lògica. | Vehicle desat |
+| CU-12 | Gestionar mètodes de pagament | Client | Sessió | Afegir targeta / PayPal / Bizum (només es desa el *token* i els 4 últims dígits), marcar-ne un per defecte, donar-ne de baixa. | Mètode desat |
+| CU-13 | Crear reserva | Client | Sessió + ≥1 vehicle + ≥1 mètode de pagament | Veure §6.1 | Reserva `confirmada` + número + PDF |
+| CU-14 | Consultar les meves reserves | Client | Sessió | Llista amb filtre per estat; detall amb pagaments i accessos. | Historial |
+| CU-15 | Cancel·lar reserva | Client | Reserva `pendent` / `confirmada` i abans de l'hora d'entrada | Indica el motiu → estat `cancelada`. | Reserva cancel·lada (no s'esborra) |
+| CU-16 | Descarregar PDF | Client | Reserva confirmada | PDF amb número de reserva, pàrquing, dates, matrícula, preu i codi QR. | PDF descarregat |
+
+### 5.3 Operador i administrador
+
+| ID | Cas d'ús | Actor | Descripció |
+|---|---|---|---|
+| CU-20 | Reserves del dia | Operador, Admin | Llista de reserves d'avui dels pàrquings assignats (l'admin, de tots). |
+| CU-21 | Accessos i ocupació | Operador, Admin | Entrades / sortides en temps real, places ocupades, accessos denegats. |
+| CU-22 | Obrir barrera manualment | Operador | Si el lector no llegeix la matrícula: obre la barrera i queda registrat a `accessos`. |
+| CU-30 | Pàrquings, places i lectors | Admin | Alta / edició / desactivació de pàrquings; alta de places (codi, planta, tipus, reservable, fora de servei); lectors d'entrada i sortida. |
+| CU-31 | Tarifes i condicions | Admin | Canviar preus (es crea una tarifa nova amb data de vigència) i publicar una versió nova de les condicions. |
+| CU-32 | Consultar reserves | Admin | Totes les reserves amb paginació. |
+| CU-33 | Modificar reserva | Admin | Canviar dates, vehicle, plaça o estat. Es recalcula el preu i queda a l'historial (qui i quan). |
+| CU-34 | Cancel·lar reserva | Admin | Estat `cancelada` + motiu obligatori + reemborsament opcional. **Les reserves no es poden eliminar** (ho impedeix també la BD). |
+| CU-35 | Cerca avançada | Admin | Filtres combinats: número, client, email, matrícula, pàrquing, estat, interval de dates, import. Estadístiques (ocupació, ingressos per pàrquing). |
+| CU-36 | Usuaris i rols | Admin | Crear operadors, assignar-los pàrquings, desactivar comptes. |
+| CU-37 | Historial de canvis | Admin | Veure tots els canvis d'una reserva (taula `reserves_historial`). |
+
+### 5.4 Processos automàtics
 
 | ID | Procés | Descripció |
 |---|---|---|
-| CU-30 | **Calcular preu** | Aplica les tarifes (1ª-2ª hora 1,90 €; 3ª hora 0,20 €; màxim diari 4,00 €; nocturna 0,60 €) i suma un 10% de despeses de gestió. |
-| CU-31 | **Generar número de reserva** | Crea un identificador únic (ex. `TPK-20261015-000123`). |
-| CU-32 | **Generar PDF** | Genera el PDF de confirmació amb les dades de la reserva. |
-| CU-33 | **Control d'accés** | El lector de matrícules detecta entrada/sortida, verifica les reserves actives i obre la barrera. |
-| CU-34 | **Cobrar excés de temps** | Si el vehicle excedeix el temps reservat, calcula l'import addicional i cobra amb el mateix mètode de pagament. |
+| CU-40 | Calcular preu | Algorisme de §7. El JavaScript el mostra en directe; **el PHP el torna a calcular** en desar (no ens fiem del navegador). |
+| CU-41 | Número de reserva i PDF | Format `TPK-AAAAMMDD-NNNNNN`. PDF amb FPDF. |
+| CU-42 | Control d'accés | Veure §6.3. |
+| CU-43 | Cobrar excés | Veure §7.4. Es cobra amb el **mateix mètode de pagament** de la reserva. |
+| CU-44 | No presentat | Tasca `cron`: les reserves `confirmada` sense entrada quan acaba la franja passen a `no_presentat`. |
+| CU-45 | Còpies i monitoratge | Còpia completa setmanal + incremental diària; Zabbix avisa si cau Apache, MariaDB o el disc s'omple. |
 
 ---
 
-## 4. Funcionament de l'aplicació des del punt de vista de l'usuaris
+## 6. Funcionament pas a pas
 
-El recorregut típic d'un client és:
-
-1. L'usuari accedeix a la web i veu la **pàgina inicial** amb informació dels pàrquings de Tarragona i el formulari de reserva.
-2. Si no té compte, es **registra** (nom, cognoms, email, telèfon, contrasenya). El sistema verifica l'email.
-3. L'usuari **inicia sessió**.
-4. Dona d'alta el seu **vehicle** (marca, model, matrícula).
-5. Selecciona el **pàrquing**, la **data**, l'**hora d'entrada** i l'**hora de sortida**. El sistema **calcula el preu automàticament** aplicant les tarifes i el 10% de despeses de gestió.
-6. L'usuari **accepta les condicions** i procedeix al **pagament**.
-7. El sistema genera el **número de reserva** i el **PDF de confirmació** que l'usuari pot descarregar.
-8. El dia de la reserva, el vehicle arriba al pàrquing. El **lector de matrícules** detecta la placa, comprova que té una **reserva activa** i obre la barrera automàticament.
-9. A la sortida, el lector registra l'hora. Si el vehicle es queda **més temps** del reservat, es **calcula l'import addicional** i es **cobra automàticament** amb el mateix mètode de pagament.
-
-Des del punt de vista de l'**administrador**:
-
-1. L'administrador inicia sessió al panel.
-2. Gestiona els **pàrquings** (alta, edició, places totals i places reservables) i les **places**.
-3. Consulta, modifica o **cancel·la reserves** (mai les elimina).
-4. Controla els **usuaris registrats**.
-5. Fa **cerques avançades** de reserves i consulta els **accessos** registrats pel lector de matrícules.
-
----
-
-## 5. Fluxe de la part d'usuari i de la part d'administració
-
-### 5.1 Flux del procés de reserva (usuari)
+### 6.1 Flux del client (reserva)
 
 ```mermaid
 flowchart TD
-    A["Accedeix a la web"] --> B{"Està registrat?"}
-    B -- No --> C["Registre del client"]
-    C --> D["Verificació email + inici de sessió"]
-    B -- Sí --> D
-    D --> E["Gestiona perfil i vehicles"]
-    E --> F["Selecciona pàrquing, data, hora entrada i sortida"]
-    F --> G["Sistema: càlcul automàtic del preu + 10% gestió"]
-    G --> H{"Accepta les condicions?"}
-    H -- No --> F
-    H -- Sí --> I["Pagament de la reserva"]
-    I --> J["Generació número de reserva i PDF"]
-    J --> K["Dia de la reserva: accés al pàrquing"]
-    K --> L["Lector de matrícules: obre barrera si reserva activa"]
-    L --> M["Sortida: registre d'hora"]
-    M --> N{"Excés de temps?"}
-    N -- No --> O["Fi"]
-    N -- Sí --> P["Càlcul de l'import addicional i cobrament automàtic"]
-    P --> O
-```
-
-### 5.2 Flux de la part d'administració
-
-```mermaid
-flowchart TD
-    A["Inici de sessió administrador"] --> B["Panel d'administració"]
-    B --> C["Gestió de pàrquings i places"]
-    C --> C1["Alta / edició / desactivació"]
-    C --> C2["Gestió del nombre de places i estat"]
-    B --> D["Gestió de reserves"]
-    D --> D1["Consulta de totes les reserves"]
-    D --> D2["Modificació de reserves"]
-    D --> D3["Cancel·lació (marcar estat, no eliminar)"]
-    D1 --> E["Cerca avançada per client, matrícula, data, estat..."]
-    B --> F["Control de clients registrats"]
-    B --> G["Consulta d'accessos i ocupació"]
-```
-
----
-
-## 6. Procés complet de reserva i càlcul de tarifes
-
-### 6.1 Tarifes (Taula de preus)
-
-| Concepte | Preu (€) |
-|---|---|
-| 1a i 2a hora d'aparcament | 1,90 €/h |
-| 3a hora d'aparcament | 0,20 €/h |
-| Preu màxim diari | 4,00 € |
-| Tarifa nocturna (22:00 – 06:00) | 0,60 €/h |
-
-**Despeses de gestió:** 10% sobre el preu base (s'aplica sempre).
-
-### 6.2 Algorisme de càlcul del preu
-
-1. Es calculen les **hores iniciades**: `hores = ceil((hora_sortida - hora_entrada) / 1 hora)`.
-2. Per a cada hora del període s'assigna una tarifa segons el rang horari:
-   - Hora dins de **22:00 – 06:00** → **0,60 €** (nocturna).
-   - **1a i 2a hora** → **1,90 €** cadascuna.
-   - **A partir de la 3a hora** → **0,20 €** cadascuna.
-3. S'acumula el preu i s'aplica el **màxim diari de 4,00 €** (el preu no pot superar els 4,00 € per dia).
-4. `preu_base = min(acumulat, 4,00 €)`.
-5. `despeses_gestió = preu_base × 10%`.
-6. `preu_total = preu_base + despeses_gestió`.
-
-```mermaid
-flowchart TD
-    A["Hora d'entrada i hora de sortida"] --> B["hores iniciades = ceil((sortida - entrada) / 1h)"]
-    B --> C["Assigna tarifa a cada hora"]
-    C --> C1["Hora dins 22:00-06:00 ➜ 0,60 €"]
-    C --> C2["1a o 2a hora ➜ 1,90 €"]
-    C --> C3["3a hora o més ➜ 0,20 €"]
-    C1 --> D["Acumula preu"]
-    C2 --> D
-    C3 --> D
-    D --> E{"Acumulat > 4,00 €?"}
-    E -- Sí --> F["preu_base = 4,00 €"]
-    E -- No --> G["preu_base = acumulat"]
-    F --> H["despeses_gestió = preu_base × 10%"]
+    A["Entra a la web (HTTPS)"] --> B["Pàgina d'inici: pàrquings, places lliures i tarifes"]
+    B --> C{"Té compte?"}
+    C -- No --> D["Registre: dades personals + DNI + RGPD"]
+    D --> E["Inici de sessió"]
+    C -- Sí --> E
+    E --> F{"Té vehicle i mètode de pagament?"}
+    F -- No --> G["Afegeix vehicle i/o mètode de pagament"]
     G --> H
-    H --> I["preu_total = preu_base + despeses_gestió"]
+    F -- Sí --> H["Formulari: pàrquing, data i hora d'entrada i sortida, vehicle"]
+    H --> I["Preu calculat en directe (+10 % gestió)"]
+    I --> J{"Hi ha places reservables lliures en aquesta franja?"}
+    J -- No --> H
+    J -- Sí --> K["Resum + acceptar condicions"]
+    K --> L{"Accepta?"}
+    L -- No --> H
+    L -- Sí --> M["Pagament amb el mètode escollit"]
+    M --> N{"Pagament correcte?"}
+    N -- No --> M
+    N -- Sí --> O["Reserva confirmada: número TPK-... + PDF"]
+    O --> P["Dia de la reserva: el lector obre la barrera"]
+    P --> Q["Sortida: si supera l'hora, cobrament automàtic de l'excés"]
 ```
 
-### 6.3 Exemples de càlcul
+**Passos que segueix l'usuari:**
+1. Entra a la web i veu els pàrquings, les places disponibles i les tarifes (pot simular un preu sense compte).
+2. Es **registra** amb les seves dades personals (és obligatori per reservar).
+3. **Inicia sessió.**
+4. Afegeix un **vehicle** (marca, model, matrícula…) i un **mètode de pagament**.
+5. Omple el **formulari de reserva**: pàrquing, data, hora d'entrada i de sortida i vehicle.
+6. Veu el **preu calculat automàticament** amb el 10 % de despeses de gestió.
+7. **Accepta les condicions** i **paga**.
+8. Rep el **número de reserva** i descarrega el **PDF**.
+9. El dia de la reserva arriba al pàrquing: la càmera llegeix la matrícula i la **barrera s'obre sola**.
+10. En sortir, si s'ha passat de l'hora, se li **cobra la diferència** amb el mateix mètode de pagament.
+11. Pot consultar o **cancel·lar** les seves reserves des de *Les meves reserves*.
 
-**Exemple 1 — Reserva diürna de 3 hores:**
-Entrada 08:00, sortida 11:00 → 3 hores iniciades.
-1a hora = 1,90 · 2a hora = 1,90 · 3a hora = 0,20 → acumulat = **4,00 €**.
-Màxim diari: 4,00 € (no s'hi aplica topall perquè ja ho és).
-Despeses de gestió (10%) = 0,40 €.
-**Total final = 4,40 €.**
+### 6.2 Flux de l'administrador i l'operador
 
-**Exemple 2 — Reserva de 1 hora diürna:**
-Entrada 09:00, sortida 10:00 → 1 hora = 1,90 €.
-Gestió 10% = 0,19 €.
-**Total final = 2,09 €.**
+```mermaid
+flowchart TD
+    A["Inici de sessió"] --> R{"Rol?"}
+    R -- Operador --> O1["Panell d'operador (només els seus pàrquings)"]
+    O1 --> O2["Reserves del dia"]
+    O1 --> O3["Accessos i ocupació en temps real"]
+    O1 --> O4["Obrir barrera manualment (queda registrat)"]
+    R -- Admin --> B["Panell d'administració"]
+    B --> C["Pàrquings, places i lectors"]
+    B --> T["Tarifes i condicions"]
+    B --> D["Reserves"]
+    D --> D1["Cerca avançada (client, matrícula, dates, estat...)"]
+    D1 --> D2["Detall + historial de canvis"]
+    D2 --> D3{"Acció"}
+    D3 --> D4["Modificar dates / vehicle / plaça → recalcula preu"]
+    D3 --> D5["Canviar estat"]
+    D3 --> D6["Cancel·lar amb motiu (+ reemborsament)"]
+    D4 & D5 & D6 --> H["Queda registrat a l'historial (qui i quan)"]
+    B --> U["Usuaris: crear operadors, assignar pàrquings, desactivar"]
+    B --> E["Estadístiques: ocupació i ingressos"]
+```
 
-**Exemple 3 — Reserva nocturna de 2 hores:**
-Entrada 22:30, sortida 00:30 → 2 hores nocturnes × 0,60 = 1,20 €.
-Gestió 10% = 0,12 €.
-**Total final = 1,32 €.**
+### 6.3 Flux del lector de matrícules (control d'accés)
 
-**Exemple 4 — Excés de temps:**
-El vehicle tenia reserva fins a les 11:00 i surt a les 11:45 (1 hora iniciada de més).
-Hora addicional aplicable = 1,90 € (o nocturna si fos de nit).
-S'afegeix al preu i es **cobra automàticament amb el mateix mètode de pagament**.
+```mermaid
+flowchart TD
+    A["Vehicle arriba a la barrera"] --> B["Càmera llegeix la matrícula"]
+    B --> C{"Lectura correcta?"}
+    C -- No --> X["Barrera tancada · motiu no_llegible · avís a l'operador"]
+    C -- Sí --> D{"Lector d'entrada o de sortida?"}
+    D -- Entrada --> E{"Té reserva confirmada per ara? (marge 15 min)"}
+    E -- Sí --> F["Obre barrera · reserva → en_curs · assigna plaça"]
+    E -- No --> G{"Hi ha places de rotació lliures?"}
+    G -- Sí --> H["Obre barrera · motiu places_lliures"]
+    G -- No --> I["Barrera tancada · motiu parquing_ple"]
+    D -- Sortida --> J{"Tenia reserva en curs?"}
+    J -- No --> K["Pagament al caixer (fora de l'abast)"]
+    J -- Sí --> L{"Hora de sortida > hora reservada + 10 min de cortesia?"}
+    L -- No --> M["Obre barrera · reserva → completada"]
+    L -- Sí --> N["Calcula l'excés i el cobra amb el mateix mètode de pagament"]
+    N --> M
+    F & H & I & M & X --> Z["Es registra a la taula accessos"]
+```
 
 ### 6.4 Estats d'una reserva
 
-Una reserva passa pels següents estats:
+```mermaid
+stateDiagram-v2
+    [*] --> pendent : client crea la reserva
+    pendent --> confirmada : pagament correcte
+    pendent --> cancelada : pagament fallit / client cancel·la
+    confirmada --> en_curs : lector d'entrada
+    confirmada --> cancelada : client o admin (amb motiu)
+    confirmada --> no_presentat : acaba la franja sense entrar
+    en_curs --> completada : lector de sortida (+ cobrament d'excés si cal)
+    completada --> [*]
+    cancelada --> [*]
+    no_presentat --> [*]
+```
 
 | Estat | Significat |
 |---|---|
-| `pendent` | Creada, esperant el pagament. |
-| `confirmada` | Pagada; reserva vàlida i amb barrera oberta per accés. |
-| `cancel·lada` | Marcada com a cancel·lada. **La reserva mai s'elimina** (auditoria i històric). |
-| `completada` | La reserva ha finalitzat (sortida registrada). |
+| `pendent` | Creada, falta el pagament. |
+| `confirmada` | Pagada. És la que el lector accepta. |
+| `en_curs` | El vehicle és dins del pàrquing. |
+| `completada` | El vehicle ha sortit. |
+| `cancelada` | Cancel·lada pel client o l'admin. **No s'elimina mai.** |
+| `no_presentat` | No ha entrat dins la franja reservada. |
 
-**Regles de negoci:**
-- Una matrícula necessita una **reserva activa** (`confirmada`) dins del període perquè la barrera s'obri.
-- Les reserves no es poden eliminar: només canvien d'estat (`cancel·lada`).
-- El càlcul de preu i el 10% de gestió són **automàtics**.
+Els estats finals (`completada`, `cancelada`, `no_presentat`) no poden canviar: ho garanteix un *trigger* de la base de dades.
 
 ---
 
-## 7. Documents relacionats
+## 7. Càlcul del preu
 
-- `02-modelo-er.md` — Model Entitat-Relació de la base de dades.
-- `03-modelo-er.sql` — Script DDL de creació de la base de dades (MySQL/MariaDB).
-- `04-planificacion.md` — Planificació del projecte (tasques, rols, Gantt).
-- `05-presentacion.md` — Document de presentació per a l'exposició oral.
-- `06-diagramas.html` — Diagrames renderitzats (Mermaid) per exportar a imatge/PDF.
+### 7.1 Tarifes (enunciat)
+
+| Concepte | Preu |
+|---|---|
+| 1a i 2a hora d'aparcament | 1,90 € / hora |
+| 3a hora d'aparcament (i següents) | 0,20 € / hora |
+| Preu màxim diari | 4,00 € |
+| Tarifa nocturna (22:00 – 06:00) | 0,60 € / hora |
+| **Despeses de gestió** | **+10 %** sobre el preu |
+
+Els preus són a la taula `tarifes` i el 10 % a `configuracio`: l'administrador els pot canviar sense tocar el codi.
+
+### 7.2 Algorisme
+
+1. **Hores iniciades:** `hores = ceil(minuts_totals / 60)`. Cada hora començada es paga sencera.
+2. L'estada es divideix en **blocs de 24 h** comptats des de l'hora d'entrada (així funcionen les reserves de diversos dies).
+3. Dins de cada bloc, per a cada hora (segons l'hora en què **comença**):
+   - Si comença entre les **22:00 i les 06:00** → **0,60 €** (nocturna).
+   - Si no, és una hora diürna: la **1a i la 2a** hora diürna del bloc → **1,90 €**; de la **3a** en endavant → **0,20 €**.
+4. El total de cada bloc té un **màxim de 4,00 €**.
+5. `preu_base = suma dels blocs`
+6. `despeses_gestio = arrodonir(preu_base × 10 %, 2 decimals)`
+7. `preu_total = preu_base + despeses_gestio`
+
+```mermaid
+flowchart TD
+    A["Entrada i sortida"] --> B["hores = ceil(minuts / 60)"]
+    B --> C["Divideix en blocs de 24 h"]
+    C --> D["Per cada hora del bloc"]
+    D --> E{"Comença entre 22:00 i 06:00?"}
+    E -- Sí --> F["+0,60 €"]
+    E -- No --> G{"És la 1a o 2a hora diürna del bloc?"}
+    G -- Sí --> H["+1,90 €"]
+    G -- No --> I["+0,20 €"]
+    F & H & I --> J{"Queden hores al bloc?"}
+    J -- Sí --> D
+    J -- No --> K["bloc = min(suma, 4,00 €)"]
+    K --> L{"Queden blocs?"}
+    L -- Sí --> D
+    L -- No --> M["preu_base = Σ blocs"]
+    M --> N["gestió = preu_base × 10 %"]
+    N --> O["preu_total = preu_base + gestió"]
+```
+
+### 7.3 Exemples
+
+| # | Franja | Càlcul | Base | +10 % | **Total** |
+|---|---|---|---|---|---|
+| 1 | 09:00 → 10:00 | 1,90 | 1,90 | 0,19 | **2,09 €** |
+| 2 | 16:00 → 18:00 | 1,90 + 1,90 | 3,80 | 0,38 | **4,18 €** |
+| 3 | 08:00 → 11:00 | 1,90 + 1,90 + 0,20 | 4,00 | 0,40 | **4,40 €** |
+| 4 | 09:00 → 14:00 | 1,90 + 1,90 + 0,20 × 3 = 4,40 → màxim | 4,00 | 0,40 | **4,40 €** |
+| 5 | 22:30 → 00:30 (passa de dia) | 0,60 + 0,60 | 1,20 | 0,12 | **1,32 €** |
+| 6 | 20:00 → 23:30 | 1,90 + 1,90 + 0,60 + 0,60 = 5,00 → màxim | 4,00 | 0,40 | **4,40 €** |
+| 7 | Dl 10:00 → Dc 10:00 (48 h) | 2 blocs × 4,00 | 8,00 | 0,80 | **8,80 €** |
+
+### 7.4 Cobrament de l'excés de temps
+
+Quan el vehicle surt **més de 10 minuts** (cortesia configurable) després de l'hora reservada:
+
+```
+excés_base  = preu(entrada_reservada → sortida_real) − preu_base_reservat
+excés_total = excés_base + 10 %
+```
+
+**Exemple:** reserva 09:00 → 10:00 (2,09 €). Surt a les 11:20.
+Preu 09:00 → 11:20 = 3 hores = 1,90 + 1,90 + 0,20 = 4,00 €.
+Excés = 4,00 − 1,90 = 2,10 € + 0,21 € = **2,31 €**, cobrats amb la mateixa targeta (pagament de tipus `exces`).
+Si el preu ja havia arribat al màxim diari, l'excés pot ser 0 €.
+
+---
+
+## 8. Regles de negoci
+
+1. Cal estar **registrat i amb sessió iniciada** per reservar.
+2. La reserva necessita un **vehicle** i un **mètode de pagament** del mateix client.
+3. No es pot reservar **en el passat** ni amb sortida ≤ entrada.
+4. No es poden superar les **places reservables** del pàrquing a la franja escollida.
+5. Un vehicle no pot tenir **dues reserves solapades**.
+6. Les reserves **mai s'eliminen**: només es cancel·len, amb motiu.
+7. Tota modificació d'una reserva queda a l'**historial** (qui, quan, què).
+8. El preu es calcula **al servidor** (PHP); el del navegador és només informatiu.
+9. L'excés es cobra amb el **mateix mètode de pagament** de la reserva.
+10. L'operador només veu els **pàrquings que té assignats**.
+
+---
+
+## 9. Seguretat (resum)
+
+| Àmbit | Mesura |
+|---|---|
+| Comunicacions | HTTPS (certificat SSL) i redirecció de HTTP a HTTPS |
+| Contrasenyes | `password_hash()` (bcrypt); bloqueig després de 5 intents |
+| Dades sensibles | DNI xifrat (AES) + hash; targetes tokenitzades (només 4 dígits) |
+| Aplicació | Sentències preparades PDO (SQL injection), `htmlspecialchars` (XSS), *token* CSRF als formularis, sessions amb `HttpOnly` i `Secure` |
+| Permisos | Control d'accés per rol a cada pàgina; usuari MySQL de la web sense `DELETE` |
+| Servidor | UFW (només 22, 80, 443), fail2ban, SSH amb claus, MariaDB només accessible des de `srv-web` |
+| Disponibilitat | RAID 1, còpies completes i incrementals, monitoratge Zabbix, balanceig opcional |
+
+---
+
+## 10. Documents relacionats
+
+- `02-modelo-er.md` — Model E/R v2.
+- `03-modelo-er.sql` — Script de la base de dades.
+- `04-planificacion.md` — Planificació, rols i Gantt.
+- `05-presentacion.md` — Guió de la presentació.
+- `06-diagramas.html` — Diagrames per a la presentació.

@@ -1,379 +1,441 @@
 <!DOCTYPE html>
 <html lang="ca">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tarraco Parkings · Diagrames Sprint 1</title>
-    <style>
-        :root {
-            --bg: #0f172a;
-            --card: #1e293b;
-            --text: #e2e8f0;
-            --accent: #f59e0b;
-            --muted: #94a3b8;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            background: var(--bg);
-            color: var(--text);
-            font-family: "Segoe UI", system-ui, sans-serif;
-            padding: 2rem 1rem;
-        }
-        header {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-        header h1 { color: var(--accent); font-size: 1.8rem; }
-        header p { color: var(--muted); margin-top: .4rem; }
-        section {
-            background: var(--card);
-            border-radius: 12px;
-            padding: 1.5rem;
-            margin: 0 auto 2rem;
-            max-width: 1100px;
-            box-shadow: 0 4px 20px rgba(0,0,0,.4);
-        }
-        section h2 {
-            font-size: 1.2rem;
-            margin-bottom: 1rem;
-            padding-bottom: .5rem;
-            border-bottom: 2px solid var(--accent);
-        }
-        .mermaid { text-align: center; }
-        .note {
-            font-size: .85rem;
-            color: var(--muted);
-            margin-top: 1rem;
-            text-align: center;
-        }
-        footer {
-            text-align: center;
-            color: var(--muted);
-            font-size: .85rem;
-            padding: 1rem;
-        }
-    </style>
-    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
-    <script>
-        mermaid.initialize({ startOnLoad: true, theme: "dark", themeVariables: {
-            primaryColor: "#1e293b",
-            primaryTextColor: "#e2e8f0",
-            primaryBorderColor: "#f59e0b",
-            lineColor: "#94a3b8",
-            secondaryColor: "#0f172a",
-            tertiaryColor: "#334155"
-        } });
-    </script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diagrames Tarraco Parkings</title>
+<style>
+  :root { --bg:#0f172a; --card:#1e293b; --text:#e2e8f0; --accent:#f59e0b; --muted:#94a3b8; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--text); font-family:"Segoe UI",system-ui,sans-serif; padding:2rem 1rem; }
+  header { text-align:center; margin-bottom:2rem; }
+  header h1 { color:var(--accent); font-size:1.8rem; }
+  header p { color:var(--muted); margin-top:.4rem; }
+  section { background:var(--card); border-radius:12px; padding:1.5rem; margin:0 auto 2rem;
+            max-width:1200px; overflow-x:auto; }
+  section h2 { font-size:1.2rem; margin-bottom:1rem; padding-bottom:.5rem; border-bottom:2px solid var(--accent); }
+  .mermaid { text-align:center; background:transparent; }
+  .note { font-size:.8rem; color:var(--muted); margin-top:1rem; text-align:right; }
+  footer { text-align:center; color:var(--muted); font-size:.85rem; padding:1rem; }
+  @media print { body { background:#fff; color:#000; } section { break-inside:avoid; background:#fff; } }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script>mermaid.initialize({ startOnLoad:true, theme:"dark", securityLevel:"loose" });</script>
 </head>
 <body>
-
 <header>
-    <h1>🏢 Tarraco Parkings · Diagrames del Sprint 1</h1>
-    <p>Sistema de Reserves de Places de Pàrquing · Tarragona</p>
+  <h1>Tarraco Parkings · Diagrames del Sprint 1 (v2)</h1>
+  <p>Carlos · Sara · Joel — generat automàticament amb generar-diagramas.py</p>
 </header>
-
-<!-- 1. CASOS D'ÚS -->
 <section>
-    <h2>1 · Diagrama de casos d'ús</h2>
-    <pre class="mermaid">
+  <h2>1 · 3. Arquitectura del sistema</h2>
+  <pre class="mermaid">
 flowchart LR
-    V["🧍 Visitant"]
-    C["🧑 Client"]
-    A["🧑‍💼 Administrador"]
-    S["⚙️ Sistema automàtic"]
+    U[&quot;🧑 Navegador&lt;br/&gt;client / operador / admin&quot;] -- &quot;HTTPS 443&quot; --&gt; FW
+    L[&quot;📷 Lector de matrícules&lt;br/&gt;(simulat)&quot;] -- &quot;HTTPS (API)&quot; --&gt; FW
+    subgraph VB[&quot;PC amfitrió · VirtualBox · xarxa en mode pont&quot;]
+        FW[&quot;UFW + fail2ban&quot;]
+        FW --&gt; WEB[&quot;srv-web&lt;br/&gt;Ubuntu Server · Apache2 + PHP 8&lt;br/&gt;SSL · RAID 1 (mdadm)&quot;]
+        WEB -- &quot;3306 (només des de srv-web)&quot; --&gt; DB[&quot;srv-db&lt;br/&gt;MariaDB + phpMyAdmin&lt;br/&gt;còpies completes + incrementals&quot;]
+        MON[&quot;srv-monitor&lt;br/&gt;Zabbix&quot;] -. &quot;agent 10050&quot; .-&gt; WEB
+        MON -. &quot;agent 10050&quot; .-&gt; DB
+        DB -- &quot;còpies&quot; --&gt; BK[(&quot;Disc de còpies&quot;)]
+    end
+  </pre>
+  <p class="note">Font: 01-esquema-funcional.md</p>
+</section>
+<section>
+  <h2>2 · 5.1 Diagrama de casos d&#x27;ús</h2>
+  <pre class="mermaid">
+flowchart LR
+    V[&quot;🧍 Visitant&quot;]
+    C[&quot;🧑 Client&quot;]
+    O[&quot;👷 Operador&quot;]
+    A[&quot;🧑‍💼 Administrador&quot;]
+    S[&quot;⚙️ Sistema / Lector&quot;]
 
-    subgraph FRONT_USUARI["Interfície usuari"]
-        UC1["CU-01 Registrar-se"]
-        UC2["CU-02 Iniciar sessió"]
-        UC3["CU-03 Tancar sessió"]
-        UC4["CU-04 Recuperar contrasenya"]
-        UC5["CU-05 Gestionar perfil"]
-        UC6["CU-06 Alta/modificació de vehicles"]
-        UC7["CU-07 Consultar pàrquings"]
-        UC8["CU-08 Crear reserva"]
-        UC9["CU-09 Consultar reserves pròpies"]
-        UC10["CU-10 Cancel·lar reserva"]
-        UC11["CU-11 Descarregar PDF"]
-        UC12["CU-12 Entrada/sortida al pàrquing"]
+    subgraph PUB[&quot;Web pública&quot;]
+        CU01[&quot;CU-01 Consultar pàrquings i tarifes&quot;]
+        CU02[&quot;CU-02 Simular preu&quot;]
+        CU03[&quot;CU-03 Registrar-se&quot;]
+        CU04[&quot;CU-04 Iniciar / tancar sessió&quot;]
+        CU05[&quot;CU-05 Recuperar contrasenya&quot;]
     end
 
-    subgraph PANEL_ADMIN["Panel administració"]
-        UA1["CU-20 Iniciar sessió administrador"]
-        UA2["CU-21 Gestionar pàrquings"]
-        UA3["CU-22 Gestionar places"]
-        UA4["CU-23 Consultar reserves"]
-        UA5["CU-24 Modificar reserves"]
-        UA6["CU-25 Cancel·lar reserves"]
-        UA7["CU-26 Cerca avançada de reserves"]
-        UA8["CU-27 Gestió de clients"]
-        UA9["CU-28 Accessos i ocupació"]
+    subgraph CLI[&quot;Àrea de client&quot;]
+        CU10[&quot;CU-10 Gestionar perfil&quot;]
+        CU11[&quot;CU-11 Gestionar vehicles&quot;]
+        CU12[&quot;CU-12 Gestionar mètodes de pagament&quot;]
+        CU13[&quot;CU-13 Crear reserva&quot;]
+        CU14[&quot;CU-14 Consultar les meves reserves&quot;]
+        CU15[&quot;CU-15 Cancel·lar reserva&quot;]
+        CU16[&quot;CU-16 Descarregar PDF&quot;]
     end
 
-    subgraph AUTOMATIC["Processos automàtics"]
-        AS1["CU-30 Calcular preu (tarifes + 10%)"]
-        AS2["CU-31 Generar número de reserva"]
-        AS3["CU-32 Generar PDF"]
-        AS4["CU-33 Control d'accés per matrícula"]
-        AS5["CU-34 Cobrar excés de temps"]
+    subgraph OPE[&quot;Panell d&#x27;operador&quot;]
+        CU20[&quot;CU-20 Veure reserves del dia del seu pàrquing&quot;]
+        CU21[&quot;CU-21 Veure accessos i ocupació&quot;]
+        CU22[&quot;CU-22 Obrir barrera manualment (incidència)&quot;]
     end
 
-    V --> UC1
-    V --> UC2
-    C --> UC2
-    C --> UC3
-    C --> UC4
-    C --> UC5
-    C --> UC6
-    C --> UC7
-    C --> UC8
-    C --> UC9
-    C --> UC10
-    C --> UC11
-    C --> UC12
-    A --> UA1
-    A --> UA2
-    A --> UA3
-    A --> UA4
-    A --> UA5
-    A --> UA6
-    A --> UA7
-    A --> UA8
-    A --> UA9
-    UC8 -.-> AS1
-    UC8 -.-> AS2
-    UC11 -.-> AS3
-    UC12 -.-> AS4
-    UC12 -.-> AS5
-    UA9 -.-> AS4
-    </pre>
-    <p class="note">💡 Consell: obre amb Chrome, fes clic dret sobre el diagrama i «Desa la imatge» per exportar-lo.</p>
-</section>
+    subgraph ADM[&quot;Panell d&#x27;administració&quot;]
+        CU30[&quot;CU-30 Gestionar pàrquings, places i lectors&quot;]
+        CU31[&quot;CU-31 Gestionar tarifes i condicions&quot;]
+        CU32[&quot;CU-32 Consultar totes les reserves&quot;]
+        CU33[&quot;CU-33 Modificar reserva / canviar estat&quot;]
+        CU34[&quot;CU-34 Cancel·lar reserva (mai eliminar)&quot;]
+        CU35[&quot;CU-35 Cerca avançada i estadístiques&quot;]
+        CU36[&quot;CU-36 Gestionar usuaris i rols&quot;]
+        CU37[&quot;CU-37 Consultar historial de canvis&quot;]
+    end
 
-<!-- 2. FLUX USUARI -->
+    subgraph SIS[&quot;Processos automàtics&quot;]
+        CU40[&quot;CU-40 Calcular preu (+10 %)&quot;]
+        CU41[&quot;CU-41 Generar número de reserva i PDF&quot;]
+        CU42[&quot;CU-42 Control d&#x27;accés per matrícula&quot;]
+        CU43[&quot;CU-43 Cobrar excés de temps&quot;]
+        CU44[&quot;CU-44 Marcar reserves no presentades&quot;]
+        CU45[&quot;CU-45 Còpies de seguretat i monitoratge&quot;]
+    end
+
+    V --&gt; CU01 &amp; CU02 &amp; CU03 &amp; CU04
+    C --&gt; CU04 &amp; CU05 &amp; CU10 &amp; CU11 &amp; CU12 &amp; CU13 &amp; CU14 &amp; CU15 &amp; CU16
+    O --&gt; CU04 &amp; CU20 &amp; CU21 &amp; CU22
+    A --&gt; CU04 &amp; CU20 &amp; CU21 &amp; CU30 &amp; CU31 &amp; CU32 &amp; CU33 &amp; CU34 &amp; CU35 &amp; CU36 &amp; CU37
+    S --&gt; CU42 &amp; CU43 &amp; CU44 &amp; CU45
+
+    CU02 -. &quot;include&quot; .-&gt; CU40
+    CU13 -. &quot;include&quot; .-&gt; CU40
+    CU13 -. &quot;include&quot; .-&gt; CU41
+    CU42 -. &quot;extend&quot; .-&gt; CU43
+  </pre>
+  <p class="note">Font: 01-esquema-funcional.md</p>
+</section>
 <section>
-    <h2>2 · Flux del procés de reserva (usuari)</h2>
-    <pre class="mermaid">
+  <h2>3 · 6.1 Flux del client (reserva)</h2>
+  <pre class="mermaid">
 flowchart TD
-    A["Accedeix a la web"] --> B{"Està registrat?"}
-    B -- No --> C["Registre del client"]
-    C --> D["Verificació email + inici de sessió"]
-    B -- Sí --> D
-    D --> E["Gestiona perfil i vehicles"]
-    E --> F["Selecciona pàrquing, data, hora entrada i sortida"]
-    F --> G["Sistema: càlcul automàtic del preu + 10% gestió"]
-    G --> H{"Accepta les condicions?"}
-    H -- No --> F
-    H -- Sí --> I["Pagament de la reserva"]
-    I --> J["Generació número de reserva i PDF"]
-    J --> K["Dia de la reserva: accés al pàrquing"]
-    K --> L["Lector de matrícules: obra barrera si reserva activa"]
-    L --> M["Sortida: registre d'hora"]
-    M --> N{"Excés de temps?"}
-    N -- No --> O["Fi"]
-    N -- Sí --> P["Càlcul import addicional i cobrament automàtic"]
-    P --> O
-    </pre>
+    A[&quot;Entra a la web (HTTPS)&quot;] --&gt; B[&quot;Pàgina d&#x27;inici: pàrquings, places lliures i tarifes&quot;]
+    B --&gt; C{&quot;Té compte?&quot;}
+    C -- No --&gt; D[&quot;Registre: dades personals + DNI + RGPD&quot;]
+    D --&gt; E[&quot;Inici de sessió&quot;]
+    C -- Sí --&gt; E
+    E --&gt; F{&quot;Té vehicle i mètode de pagament?&quot;}
+    F -- No --&gt; G[&quot;Afegeix vehicle i/o mètode de pagament&quot;]
+    G --&gt; H
+    F -- Sí --&gt; H[&quot;Formulari: pàrquing, data i hora d&#x27;entrada i sortida, vehicle&quot;]
+    H --&gt; I[&quot;Preu calculat en directe (+10 % gestió)&quot;]
+    I --&gt; J{&quot;Hi ha places reservables lliures en aquesta franja?&quot;}
+    J -- No --&gt; H
+    J -- Sí --&gt; K[&quot;Resum + acceptar condicions&quot;]
+    K --&gt; L{&quot;Accepta?&quot;}
+    L -- No --&gt; H
+    L -- Sí --&gt; M[&quot;Pagament amb el mètode escollit&quot;]
+    M --&gt; N{&quot;Pagament correcte?&quot;}
+    N -- No --&gt; M
+    N -- Sí --&gt; O[&quot;Reserva confirmada: número TPK-... + PDF&quot;]
+    O --&gt; P[&quot;Dia de la reserva: el lector obre la barrera&quot;]
+    P --&gt; Q[&quot;Sortida: si supera l&#x27;hora, cobrament automàtic de l&#x27;excés&quot;]
+  </pre>
+  <p class="note">Font: 01-esquema-funcional.md</p>
 </section>
-
-<!-- 3. FLUX ADMIN -->
 <section>
-    <h2>3 · Flux de la part d'administració</h2>
-    <pre class="mermaid">
+  <h2>4 · 6.2 Flux de l&#x27;administrador i l&#x27;operador</h2>
+  <pre class="mermaid">
 flowchart TD
-    A["Inici de sessió administrador"] --> B["Panel d'administració"]
-    B --> C["Gestió de pàrquings i places"]
-    C --> C1["Alta / edició / desactivació"]
-    C --> C2["Gestió del nombre de places i estat"]
-    B --> D["Gestió de reserves"]
-    D --> D1["Consulta de totes les reserves"]
-    D --> D2["Modificació de reserves"]
-    D --> D3["Cancel·lació (marcar estat, no eliminar)"]
-    D1 --> E["Cerca avançada per client, matrícula, data, estat..."]
-    B --> F["Control de clients registrats"]
-    B --> G["Consulta d'accessos i ocupació"]
-    </pre>
+    A[&quot;Inici de sessió&quot;] --&gt; R{&quot;Rol?&quot;}
+    R -- Operador --&gt; O1[&quot;Panell d&#x27;operador (només els seus pàrquings)&quot;]
+    O1 --&gt; O2[&quot;Reserves del dia&quot;]
+    O1 --&gt; O3[&quot;Accessos i ocupació en temps real&quot;]
+    O1 --&gt; O4[&quot;Obrir barrera manualment (queda registrat)&quot;]
+    R -- Admin --&gt; B[&quot;Panell d&#x27;administració&quot;]
+    B --&gt; C[&quot;Pàrquings, places i lectors&quot;]
+    B --&gt; T[&quot;Tarifes i condicions&quot;]
+    B --&gt; D[&quot;Reserves&quot;]
+    D --&gt; D1[&quot;Cerca avançada (client, matrícula, dates, estat...)&quot;]
+    D1 --&gt; D2[&quot;Detall + historial de canvis&quot;]
+    D2 --&gt; D3{&quot;Acció&quot;}
+    D3 --&gt; D4[&quot;Modificar dates / vehicle / plaça → recalcula preu&quot;]
+    D3 --&gt; D5[&quot;Canviar estat&quot;]
+    D3 --&gt; D6[&quot;Cancel·lar amb motiu (+ reemborsament)&quot;]
+    D4 &amp; D5 &amp; D6 --&gt; H[&quot;Queda registrat a l&#x27;historial (qui i quan)&quot;]
+    B --&gt; U[&quot;Usuaris: crear operadors, assignar pàrquings, desactivar&quot;]
+    B --&gt; E[&quot;Estadístiques: ocupació i ingressos&quot;]
+  </pre>
+  <p class="note">Font: 01-esquema-funcional.md</p>
 </section>
-
-<!-- 4. CÀLCUL DE PREU -->
 <section>
-    <h2>4 · Algorisme de càlcul del preu</h2>
-    <pre class="mermaid">
+  <h2>5 · 6.3 Flux del lector de matrícules (control d&#x27;accés)</h2>
+  <pre class="mermaid">
 flowchart TD
-    A["Hora d'entrada i hora de sortida"] --> B["hores iniciades = ceil((sortida - entrada) / 1h)"]
-    B --> C["Assigna tarifa a cada hora"]
-    C --> C1["Hora dins 22:00–06:00 ➜ 0,60 €"]
-    C --> C2["1a o 2a hora ➜ 1,90 €"]
-    C --> C3["3a hora o més ➜ 0,20 €"]
-    C1 --> D["Acumula preu"]
-    C2 --> D
-    C3 --> D
-    D --> E{"Acumulat &gt; 4,00 €?"}
-    E -- Sí --> F["preu_base = 4,00 €"]
-    E -- No --> G["preu_base = acumulat"]
-    F --> H["despeses_gestió = preu_base × 10%"]
-    G --> H
-    H --> I["preu_total = preu_base + despeses_gestió"]
-    </pre>
+    A[&quot;Vehicle arriba a la barrera&quot;] --&gt; B[&quot;Càmera llegeix la matrícula&quot;]
+    B --&gt; C{&quot;Lectura correcta?&quot;}
+    C -- No --&gt; X[&quot;Barrera tancada · motiu no_llegible · avís a l&#x27;operador&quot;]
+    C -- Sí --&gt; D{&quot;Lector d&#x27;entrada o de sortida?&quot;}
+    D -- Entrada --&gt; E{&quot;Té reserva confirmada per ara? (marge 15 min)&quot;}
+    E -- Sí --&gt; F[&quot;Obre barrera · reserva → en_curs · assigna plaça&quot;]
+    E -- No --&gt; G{&quot;Hi ha places de rotació lliures?&quot;}
+    G -- Sí --&gt; H[&quot;Obre barrera · motiu places_lliures&quot;]
+    G -- No --&gt; I[&quot;Barrera tancada · motiu parquing_ple&quot;]
+    D -- Sortida --&gt; J{&quot;Tenia reserva en curs?&quot;}
+    J -- No --&gt; K[&quot;Pagament al caixer (fora de l&#x27;abast)&quot;]
+    J -- Sí --&gt; L{&quot;Hora de sortida &gt; hora reservada + 10 min de cortesia?&quot;}
+    L -- No --&gt; M[&quot;Obre barrera · reserva → completada&quot;]
+    L -- Sí --&gt; N[&quot;Calcula l&#x27;excés i el cobra amb el mateix mètode de pagament&quot;]
+    N --&gt; M
+    F &amp; H &amp; I &amp; M &amp; X --&gt; Z[&quot;Es registra a la taula accessos&quot;]
+  </pre>
+  <p class="note">Font: 01-esquema-funcional.md</p>
 </section>
-
-<!-- 5. MODEL E/R -->
 <section>
-    <h2>5 · Model Entitat-Relació</h2>
-    <pre class="mermaid">
+  <h2>6 · 6.4 Estats d&#x27;una reserva</h2>
+  <pre class="mermaid">
+stateDiagram-v2
+    [*] --&gt; pendent : client crea la reserva
+    pendent --&gt; confirmada : pagament correcte
+    pendent --&gt; cancelada : pagament fallit / client cancel·la
+    confirmada --&gt; en_curs : lector d&#x27;entrada
+    confirmada --&gt; cancelada : client o admin (amb motiu)
+    confirmada --&gt; no_presentat : acaba la franja sense entrar
+    en_curs --&gt; completada : lector de sortida (+ cobrament d&#x27;excés si cal)
+    completada --&gt; [*]
+    cancelada --&gt; [*]
+    no_presentat --&gt; [*]
+  </pre>
+  <p class="note">Font: 01-esquema-funcional.md</p>
+</section>
+<section>
+  <h2>7 · 7.2 Algorisme</h2>
+  <pre class="mermaid">
+flowchart TD
+    A[&quot;Entrada i sortida&quot;] --&gt; B[&quot;hores = ceil(minuts / 60)&quot;]
+    B --&gt; C[&quot;Divideix en blocs de 24 h&quot;]
+    C --&gt; D[&quot;Per cada hora del bloc&quot;]
+    D --&gt; E{&quot;Comença entre 22:00 i 06:00?&quot;}
+    E -- Sí --&gt; F[&quot;+0,60 €&quot;]
+    E -- No --&gt; G{&quot;És la 1a o 2a hora diürna del bloc?&quot;}
+    G -- Sí --&gt; H[&quot;+1,90 €&quot;]
+    G -- No --&gt; I[&quot;+0,20 €&quot;]
+    F &amp; H &amp; I --&gt; J{&quot;Queden hores al bloc?&quot;}
+    J -- Sí --&gt; D
+    J -- No --&gt; K[&quot;bloc = min(suma, 4,00 €)&quot;]
+    K --&gt; L{&quot;Queden blocs?&quot;}
+    L -- Sí --&gt; D
+    L -- No --&gt; M[&quot;preu_base = Σ blocs&quot;]
+    M --&gt; N[&quot;gestió = preu_base × 10 %&quot;]
+    N --&gt; O[&quot;preu_total = preu_base + gestió&quot;]
+  </pre>
+  <p class="note">Font: 01-esquema-funcional.md</p>
+</section>
+<section>
+  <h2>8 · 2. Diagrama E/R</h2>
+  <pre class="mermaid">
 erDiagram
-    CLIENTS ||--o{ VEHICLES : "posseeix"
-    CLIENTS ||--o{ RESERVES : "realitza"
-    VEHICLES ||--o{ RESERVES : "utilitzat en"
-    PARQUINGS ||--o{ PLACES : "conté"
-    PARQUINGS ||--o{ RESERVES : "atién"
-    PLACES ||--o{ RESERVES : "assignada a"
-    RESERVES ||--|| PAGAMENTS : "pagat amb"
-    PARQUINGS ||--o{ ACCESSOS : "registra"
-    RESERVES ||--o{ ACCESSOS : "relacionat amb"
+    ROLS ||--o{ USUARIS : &quot;assigna&quot;
+    USUARIS ||--o| CLIENTS : &quot;té dades de&quot;
+    USUARIS ||--o{ OPERADORS_PARQUINGS : &quot;opera&quot;
+    PARQUINGS ||--o{ OPERADORS_PARQUINGS : &quot;és operat per&quot;
+    CLIENTS ||--o{ VEHICLES : &quot;posseeix&quot;
+    CLIENTS ||--o{ METODES_PAGAMENT : &quot;desa&quot;
+    CLIENTS ||--o{ RESERVES : &quot;realitza&quot;
+    VEHICLES ||--o{ RESERVES : &quot;s&#x27;usa en&quot;
+    METODES_PAGAMENT ||--o{ RESERVES : &quot;paga&quot;
+    CONDICIONS ||--o{ RESERVES : &quot;acceptades a&quot;
+    PARQUINGS ||--o{ PLACES : &quot;conté&quot;
+    PARQUINGS ||--o{ LECTORS : &quot;té&quot;
+    PARQUINGS ||--o{ RESERVES : &quot;rep&quot;
+    PARQUINGS |o--o{ TARIFES : &quot;pot tenir pròpies&quot;
+    PLACES |o--o{ RESERVES : &quot;assignada a&quot;
+    RESERVES ||--o{ PAGAMENTS : &quot;genera&quot;
+    METODES_PAGAMENT ||--o{ PAGAMENTS : &quot;s&#x27;usa en&quot;
+    RESERVES ||--o{ RESERVES_HISTORIAL : &quot;audita&quot;
+    USUARIS |o--o{ RESERVES_HISTORIAL : &quot;fa el canvi&quot;
+    LECTORS ||--o{ ACCESSOS : &quot;registra&quot;
+    VEHICLES |o--o{ ACCESSOS : &quot;detectat a&quot;
+    RESERVES |o--o{ ACCESSOS : &quot;justifica&quot;
 
+    ROLS {
+        tinyint id_rol PK
+        varchar codi UK &quot;client, operador, admin&quot;
+        varchar nom
+    }
+    USUARIS {
+        int id_usuari PK
+        tinyint id_rol FK
+        varchar email UK
+        varchar password_hash &quot;bcrypt&quot;
+        bool email_verificat
+        tinyint intents_fallits
+        bool actiu
+    }
     CLIENTS {
         int id_client PK
-        string nom
-        string primer_cognom
-        string segon_cognom
-        string email UK
-        string telefon
-        string password_hash
-        bool es_admin
-        bool actiu
-        datetime data_registre
+        int id_usuari FK,UK
+        varchar nom
+        varchar primer_cognom
+        varbinary dni_xifrat &quot;AES&quot;
+        char dni_hash UK
+        varchar telefon
+        datetime consentiment_rgpd
     }
-
     VEHICLES {
         int id_vehicle PK
         int id_client FK
-        string matricula UK
-        string marca
-        string model
+        varchar matricula
+        varchar marca
+        varchar model
+        enum tipus
+        bool actiu
+        varchar matricula_activa UK &quot;generada&quot;
     }
-
+    METODES_PAGAMENT {
+        int id_metode PK
+        int id_client FK
+        enum tipus &quot;targeta, paypal, bizum&quot;
+        char ultims_digits
+        varchar token_passarela
+        bool predeterminat
+    }
     PARQUINGS {
         int id_parquing PK
-        string nom
-        string ubicacio
-        int places_totals
-        int places_reservables
+        varchar nom UK
+        varchar adreca
+        decimal latitud
+        decimal longitud
+        smallint places_totals
         bool actiu
     }
-
+    OPERADORS_PARQUINGS {
+        int id_usuari PK,FK
+        int id_parquing PK,FK
+    }
     PLACES {
         int id_placa PK
         int id_parquing FK
-        string codi_placa
-        string tipus
-        string estat
+        varchar codi_placa
+        tinyint planta
+        enum tipus
+        bool reservable
+        enum estat &quot;operativa, fora_servei&quot;
     }
-
+    LECTORS {
+        int id_lector PK
+        int id_parquing FK
+        varchar codi UK
+        enum tipus &quot;entrada, sortida&quot;
+    }
+    TARIFES {
+        int id_tarifa PK
+        int id_parquing FK &quot;NULL = general&quot;
+        enum codi
+        decimal preu
+        date vigent_des
+        date vigent_fins
+    }
+    CONFIGURACIO {
+        varchar clau PK
+        varchar valor
+    }
+    CONDICIONS {
+        int id_condicions PK
+        varchar versio UK
+        text text
+    }
     RESERVES {
         int id_reserva PK
-        string numero_reserva UK
+        varchar numero_reserva UK
         int id_client FK
         int id_vehicle FK
         int id_parquing FK
         int id_placa FK
-        date data
-        time hora_entrada
-        time hora_sortida
+        int id_metode FK
+        int id_condicions FK
+        datetime data_hora_entrada
+        datetime data_hora_sortida
         decimal preu_base
         decimal despeses_gestio
         decimal preu_total
-        string estat
-        bool condicions_acceptades
-        string pdf_path
-        datetime creada_a
+        enum estat
     }
-
+    RESERVES_HISTORIAL {
+        bigint id_historial PK
+        int id_reserva FK
+        int id_usuari FK
+        enum accio
+        varchar estat_anterior
+        varchar estat_nou
+        datetime data_canvi
+    }
     PAGAMENTS {
         int id_pagament PK
         int id_reserva FK
-        string metode
+        int id_metode FK
+        enum tipus &quot;reserva, exces, reemborsament&quot;
         decimal import
-        string estat
-        string referencia
-        datetime data_pagament
+        enum estat
     }
-
     ACCESSOS {
-        int id_acces PK
-        int id_parquing FK
-        string matricula
+        bigint id_acces PK
+        int id_lector FK
+        varchar matricula_llegida
+        int id_vehicle FK
         int id_reserva FK
-        string tipus
         datetime data_hora
         bool barrera_oberta
-        string motiu_denegacio
+        enum motiu
     }
-
-    TARIFES {
-        int id_tarifa PK
-        string concepte
-        decimal preu
-        bool actiu
-    }
-    </pre>
+  </pre>
+  <p class="note">Font: 02-modelo-er.md</p>
 </section>
-
-<!-- 6. GANTT -->
 <section>
-    <h2>6 · Planificació (Diagrama de Gantt)</h2>
-    <pre class="mermaid">
+  <h2>9 · 6. Diagrama de Gantt</h2>
+  <pre class="mermaid">
 gantt
-    title Planificació — Tarraco Parkings (Oct–Des 2026)
+    title Tarraco Parkings — Planificació (set–nov 2026)
     dateFormat  YYYY-MM-DD
-    axisFormat  %d %b
+    axisFormat  %d/%m
 
-    section S1 · Anàlisi i disseny
-    Esquema funcional i casos d'ús      :s1a, 2026-10-05, 7d
-    Model E/R i script SQL              :s1b, 2026-10-08, 7d
-    Planificació i presentació          :s1c, 2026-10-13, 6d
+    section Sprint 1 · Anàlisi
+    Requisits i casos d&#x27;ús (C,S)         :done, a1, 2026-09-21, 5d
+    Model E/R v1 i SQL (C)               :done, a2, 2026-09-24, 6d
+    Planificació i presentació (C,S)     :done, a3, 2026-09-28, 5d
+    Entrega Sprint 1                     :milestone, done, m1, 2026-10-02, 0d
 
-    section S2 · Infraestructura
-    Servidor GNU/Linux + RAID           :s2a, 2026-10-12, 10d
-    Apache2 + PHP + MySQL + phpMyAdmin  :s2b, 2026-10-19, 10d
-    SSL + tallafocs                     :s2c, 2026-10-26, 5d
-    Còpies de seguretat + monitoratge   :s2d, 2026-11-02, 8d
+    section Prototip
+    Prototip visual React (C,S)          :done, p1, 2026-10-05, 38d
 
-    section S3 · Base de dades
-    Creació BD i seed                   :s3a, 2026-10-26, 5d
-    Connexió PDO i models               :s3b, 2026-10-30, 6d
+    section Revisió Sprint 1
+    BD v2 + SQL (C)                      :active, r1, 2026-11-13, 2d
+    Esquema funcional v2 (S)             :active, r2, 2026-11-13, 2d
+    Planificació + GitHub Projects (C)   :r3, 2026-11-14, 1d
+    Dades pàrquings i bibliografia (J)   :r4, 2026-11-13, 3d
+    Presentació i assaig (C,S,J)         :r5, 2026-11-15, 1d
 
-    section S4 · Backend PHP
-    Auth (registre, login, sessions)    :s4a, 2026-11-05, 6d
-    Perfil i vehicles                   :s4b, 2026-11-11, 4d
-    Reserves + càlcul de preu           :s4c, 2026-11-13, 7d
-    PDF i pagaments                     :s4d, 2026-11-20, 5d
+    section Sprint 2 · Infra
+    VM, xarxa, RAID (S)                  :i1, 2026-11-16, 1d
+    Apache, PHP, SSL, tallafocs (S)      :i2, 2026-11-16, 2d
+    MariaDB, phpMyAdmin, usuaris (C)     :i3, 2026-11-16, 1d
+    Còpies de seguretat (C)              :i4, 2026-11-18, 1d
+    Zabbix (S)                           :i5, 2026-11-18, 1d
 
-    section S5 · Frontend usuari
-    Disseny i pàgina inicial            :s5a, 2026-11-12, 6d
-    Formularis i reserves               :s5b, 2026-11-18, 8d
-    Consulta reserves + PDF             :s5c, 2026-11-26, 4d
+    section Sprint 2 · Aplicació
+    MVC + login + rols (C)               :w1, 2026-11-17, 1d
+    Plantilla web + inici (S)            :w2, 2026-11-17, 2d
+    Perfil, vehicles, pagament (C,S)     :w3, 2026-11-18, 1d
+    Reserva + preu + PDF (C,S)           :w4, 2026-11-18, 2d
+    Panell admin i operador (C)          :w5, 2026-11-19, 2d
+    Simulador lector (C)                 :w6, 2026-11-20, 1d
+    Proves com a usuari (J)              :w7, 2026-11-19, 2d
 
-    section S6 · Control d'accés
-    Simulador lector de matrícules      :s6a, 2026-11-25, 7d
-    Excés de temps i cobrament          :s6b, 2026-12-02, 4d
-
-    section S7 · Panel administració
-    Pàrquings i places                  :s7a, 2026-12-01, 5d
-    Reserves, clients i cerques         :s7b, 2026-12-07, 5d
-
-    section S8 · Seguretat i proves
-    Proves funcionals                   :s8a, 2026-12-09, 6d
-    Ciberseguretat i backups            :s8b, 2026-12-11, 5d
-
-    section S9 · Documentació i exposició
-    Manual i docs tècnics               :s9a, 2026-12-09, 7d
-    Presentació oral                    :s9b, 2026-12-16, 2d
-    </pre>
+    section Sprint 2 · Docs
+    Captures (J)                         :d1, 2026-11-20, 1d
+    Manual + doc. instal·lació (S)       :d2, 2026-11-20, 2d
+    Doc. BD i codi (C)                   :d3, 2026-11-20, 1d
+    Presentació + assaig (C,S,J)         :d4, 2026-11-21, 1d
+    Entrega Sprint 2                     :milestone, m2, 2026-11-21, 0d
+  </pre>
+  <p class="note">Font: 04-planificacion.md</p>
 </section>
-
-<footer>
-    Tarraco Parkings · Sprint 1 · Documents: 01-esquema-funcional.md · 02-modelo-er.md · 03-modelo-er.sql · 04-planificacion.md · 05-presentacion.md
-</footer>
-
+<footer>Sistema de Reserves de Places de Pàrquing · Tarragona · 2026</footer>
 </body>
 </html>
