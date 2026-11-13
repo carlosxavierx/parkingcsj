@@ -37,3 +37,11 @@ Idioma de la documentació: **català**. L'equip parla amb Claude en castellà/c
 
 ## Usuaris de demo (seed)
 client@demo.cat / Client1234! · client2@demo.cat / Client1234! · operador@demo.cat / Operador1234! · admin@demo.cat / Admin1234!
+
+## Propers passos (acordats el 13/11, per fer a l'ordinador de casa)
+1. Provar `03-modelo-er.sql` a MariaDB i corregir errors si n'hi ha.
+2. `gh auth login` i crear el tauler de GitHub Projects amb les tasques de `04-planificacion.md`.
+3. Revisar la branca `sprint1-v2` i fusionar-la a `main`.
+4. Sprint 2: esquelet de l'app PHP (MVC, PDO, config fora del DocumentRoot, login amb rols, classe de preu amb tests).
+5. Sprint 2: scripts d'instal·lació de les VM (srv-web, srv-db, còpies amb cron) + base de la documentació tècnica.
+6. Plantilles per a Joel: checklist de proves i bibliografia.
