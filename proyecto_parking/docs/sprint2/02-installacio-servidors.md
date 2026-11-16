@@ -313,6 +313,10 @@ Import-Certificate -FilePath "$env:USERPROFILE\csj-parkings-ca.crt" -CertStoreLo
 
 ![Windows demana confirmació per instal·lar la CA CSJ Parkings Root CA](img/ssl-01-importar-ca-windows.png)
 
+Un cop instal·lada la CA, el navegador confia en el certificat del servidor:
+
+![Navegador: «La conexión es segura» a https://192.168.56.30](img/ssl-02-connexio-segura.png)
+
 ### 5.2 Apache amb HTTPS
 
 - **Port 80:** només redirigeix (301) a `https://`.

@@ -1,0 +1,110 @@
+Informe còpies de seguretat (prova) · parking-srv · 17/11/2026 00:52:00
+
+==================================================================
+## 1. Còpia completa
+==================================================================
+
+$ /usr/local/sbin/csj-backup full
+2026-11-17 00:52:00 [full] Inici còpia completa -> /var/backups/csjparkings/full/csj_parkings_full_20261117-005200.sql.gz
+2026-11-17 00:52:00 [full] Còpia completa feta: 8,0K
+2026-11-17 00:52:00 [full] Còpia de fitxers web i configuració: 104K
+2026-11-17 00:52:01 [full] Còpies sincronitzades amb parking-mon
+Posició del binary log on comença la còpia:
+-- CHANGE MASTER TO MASTER_LOG_FILE='mysql-bin.000006', MASTER_LOG_POS=385;
+
+==================================================================
+## 2. Canvi a la base de dades després de la còpia completa
+==================================================================
+Inserit a historial_reserves: 'Prova de còpia incremental 00:52:01'
+
+==================================================================
+## 3. Còpia incremental
+==================================================================
+
+$ /usr/local/sbin/csj-backup incr
+2026-11-17 00:52:01 [incr] Inici còpia incremental
+2026-11-17 00:52:01 [incr] Còpia incremental feta: 6 binary logs nous (log actual: mysql-bin.000007)
+2026-11-17 00:52:01 [incr] Còpies sincronitzades amb parking-mon
+
+$ ls -l /var/backups/csjparkings/full /var/backups/csjparkings/incr /var/backups/csjparkings/fitxers
+/var/backups/csjparkings/fitxers:
+total 104
+-rw-r--r-- 1 root root 104868 nov 17 00:52 web-config_20261117-005200.tar.gz
+
+/var/backups/csjparkings/full:
+total 12
+-rw-r--r-- 1 root root 7689 nov 17 00:52 csj_parkings_full_20261117-005200.sql.gz
+-rw-r--r-- 1 root root  137 nov 17 00:52 csj_parkings_full_20261117-005200.sql.gz.sha256
+
+/var/backups/csjparkings/incr:
+total 60
+-rw-r--r-- 1 root root 12438 nov 17 00:52 mysql-bin.000001.gz
+-rw-r--r-- 1 root root 10099 nov 17 00:52 mysql-bin.000002.gz
+-rw-r--r-- 1 root root 10587 nov 17 00:52 mysql-bin.000003.gz
+-rw-r--r-- 1 root root 10441 nov 17 00:52 mysql-bin.000004.gz
+-rw-r--r-- 1 root root   221 nov 17 00:52 mysql-bin.000005.gz
+-rw-r--r-- 1 root root   485 nov 17 00:52 mysql-bin.000006.gz
+
+==================================================================
+## 4. Còpies a parking-mon
+==================================================================
+/srv/backups/parking-srv:
+total 12
+drwxr-xr-x 2 backup backup 4096 nov 17 00:52 fitxers
+drwxr-xr-x 2 backup backup 4096 nov 17 00:52 full
+drwxr-xr-x 2 backup backup 4096 nov 17 00:52 incr
+
+/srv/backups/parking-srv/fitxers:
+total 104
+-rw-r--r-- 1 backup backup 104868 nov 17 00:52 web-config_20261117-005200.tar.gz
+
+/srv/backups/parking-srv/full:
+total 12
+-rw-r--r-- 1 backup backup 7689 nov 17 00:52 csj_parkings_full_20261117-005200.sql.gz
+-rw-r--r-- 1 backup backup  137 nov 17 00:52 csj_parkings_full_20261117-005200.sql.gz.sha256
+
+/srv/backups/parking-srv/incr:
+total 60
+-rw-r--r-- 1 backup backup 12438 nov 17 00:52 mysql-bin.000001.gz
+-rw-r--r-- 1 backup backup 10099 nov 17 00:52 mysql-bin.000002.gz
+-rw-r--r-- 1 backup backup 10587 nov 17 00:52 mysql-bin.000003.gz
+-rw-r--r-- 1 backup backup 10441 nov 17 00:52 mysql-bin.000004.gz
+-rw-r--r-- 1 backup backup   221 nov 17 00:52 mysql-bin.000005.gz
+-rw-r--r-- 1 backup backup   485 nov 17 00:52 mysql-bin.000006.gz
+
+==================================================================
+## 5. Prova de restauració (en una BD temporal csj_restauracio)
+==================================================================
+a) Es restaura la còpia completa: csj_parkings_full_20261117-005200.sql.gz
+   Canvi present només amb la completa: 0 (ha de ser 0)
+b) S'apliquen les incrementals des de mysql-bin.000006 posició 385
+   Binary logs aplicats: mysql-bin.000006
+   Canvi present després d'aplicar les incrementals: 1 (ha de ser 1)
+
+Comparació de files (original / restaurada):
+  parquings            14 / 14
+  places               323 / 323
+  tarifes              9 / 9
+  usuaris              3 / 3
+  reserves             1 / 1
+  historial_reserves   2 / 2
+
+==================================================================
+## 6. Neteja de la prova
+==================================================================
+BD temporal esborrada i registre de prova eliminat.
+
+==================================================================
+## 7. Registre de les còpies
+==================================================================
+2026-11-17 00:52:00 [full] Inici còpia completa -> /var/backups/csjparkings/full/csj_parkings_full_20261117-005200.sql.gz
+2026-11-17 00:52:00 [full] Còpia completa feta: 8,0K
+2026-11-17 00:52:00 [full] Còpia de fitxers web i configuració: 104K
+2026-11-17 00:52:01 [full] Còpies sincronitzades amb parking-mon
+2026-11-17 00:52:01 [incr] Inici còpia incremental
+2026-11-17 00:52:01 [incr] Còpia incremental feta: 6 binary logs nous (log actual: mysql-bin.000007)
+2026-11-17 00:52:01 [incr] Còpies sincronitzades amb parking-mon
+
+==================================================================
+## FET
+==================================================================

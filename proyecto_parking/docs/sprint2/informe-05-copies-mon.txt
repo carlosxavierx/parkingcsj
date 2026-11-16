@@ -1,0 +1,24 @@
+Informe còpies (destí) · parking-mon · 17/11/2026 00:51:19
+
+==================================================================
+## 1. Usuari backup i carpeta de destí
+==================================================================
+backup:x:34:34:backup:/srv/backups:/bin/sh
+drwx------ 4 backup backup 4096 nov 17 00:51 /srv/backups
+drwx------ 2 backup backup 4096 nov 17 00:51 /srv/backups/parking-srv
+
+==================================================================
+## 2. Clau autoritzada (només des de parking-srv)
+==================================================================
+restrict,from="192.168.56.30" ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIztjkM5ctw4sDI+7tWjkp8P
+
+==================================================================
+## 3. Retenció (35 dies)
+==================================================================
+# CSJ Parkings · esborra còpies de més de 35 dies
+0 5 * * *  root  find /srv/backups/parking-srv -type f -mtime +35 -delete
+
+==================================================================
+## FET
+==================================================================
+parking-mon preparat per rebre còpies a /srv/backups/parking-srv

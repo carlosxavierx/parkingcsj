@@ -1,0 +1,36 @@
+Informe còpies de seguretat (installar) · parking-srv · 17/11/2026 00:50:42
+
+==================================================================
+## 1. Credencials de l'usuari de còpies (csj_backup)
+==================================================================
+-rw------- 1 root root 55 nov 17 00:50 /root/.my-backup.cnf
+usuari
+csj_backup@localhost
+File	Position	Binlog_Do_DB	Binlog_Ignore_DB
+mysql-bin.000005	342		
+
+==================================================================
+## 2. Script de còpies /usr/local/sbin/csj-backup
+==================================================================
+-rwxr-x--- 1 root root 3194 nov 17 00:50 /usr/local/sbin/csj-backup
+
+==================================================================
+## 3. Clau SSH dedicada per enviar les còpies a parking-mon
+==================================================================
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIztjkM5ctw4sDI+7tWjkp8PWYLOMSn5QOSKL9ILN1s2 backup@parking-srv
+
+==================================================================
+## 4. Programació (cron)
+==================================================================
+# CSJ Parkings · còpies de seguretat
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+# Còpia completa: diumenge a les 02:00
+0  2 * * 0  root  /usr/local/sbin/csj-backup full
+# Còpia incremental: cada dia a les 02:30
+30 2 * * *  root  /usr/local/sbin/csj-backup incr
+
+==================================================================
+## FET
+==================================================================
+Ara cal preparar parking-mon (05-copies-mon.sh) i després executar: sudo bash ~/infra/05-copies-srv.sh prova
