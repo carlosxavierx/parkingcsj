@@ -238,6 +238,7 @@ cmd ls -la /srv/www "$WEB" "$WEB/config"
 
 # ---------------------------------------------------------------------
 pas "9. Apache: VirtualHost csjparkings.local"
+if [[ ! -f /etc/apache2/sites-available/csjparkings.conf ]]; then  # no trepitjar la versió HTTPS (04-ssl-seguretat.sh)
 cat > /etc/apache2/sites-available/csjparkings.conf <<'EOF'
 # CSJ Parkings · VirtualHost HTTP (l'HTTPS es configura al pas de l'SSL)
 <VirtualHost *:80>
@@ -255,6 +256,7 @@ cat > /etc/apache2/sites-available/csjparkings.conf <<'EOF'
     CustomLog ${APACHE_LOG_DIR}/csjparkings-access.log combined
 </VirtualHost>
 EOF
+fi
 echo "ServerName parking-srv" > /etc/apache2/conf-available/servername.conf
 a2enconf -q servername >/dev/null
 a2enmod -q rewrite headers >/dev/null

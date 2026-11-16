@@ -12,9 +12,9 @@
 | 2 | RAID 1 amb mdadm | parking-srv | ✅ |
 | 3 | Apache2 + PHP | parking-srv | ✅ |
 | 4 | MariaDB + phpMyAdmin | parking-srv | ✅ |
-| 5 | Certificat SSL (HTTPS) | parking-srv | ⬜ |
-| 6 | Securització: tallafocs, fail2ban, SSH, Apache | tots dos | ⬜ |
-| 7 | Usuaris i permisos del sistema de fitxers | parking-srv | ⬜ |
+| 5 | Certificat SSL (HTTPS) | parking-srv | ✅ |
+| 6 | Securització: tallafocs, fail2ban, SSH, Apache | parking-srv ✅ · parking-mon al pas 9 | 🔧 |
+| 7 | Usuaris i permisos del sistema de fitxers | parking-srv | ✅ |
 | 8 | Còpies de seguretat completes i incrementals | srv → mon | ⬜ |
 | 9 | Monitoratge (Prometheus + Grafana) | parking-mon | ⬜ |
 | 10 | Alta disponibilitat | tots dos | ⬜ |
@@ -268,48 +268,153 @@ pàrquings de la base de dades.
 > `/srv/www` s'havia creat amb permisos només per a root (`700`) i Apache no la podia travessar.
 > Solució: `chown root:www-data /srv/www` i `chmod 750 /srv/www` (corregit a l'script).
 
-## 5. Certificat SSL (parking-srv)
+## 5. Certificat SSL (HTTPS) i 6–7. Securització, usuaris i permisos (parking-srv)
 
-**Justificació:** Let's Encrypt necessita un domini públic accessible des d'Internet. En una xarxa
-privada es crea una **autoritat de certificació (CA) pròpia** i se n'importa el certificat arrel
-a l'equip client, de manera que el navegador confia en el lloc.
+Es fa amb l'script [`infra/04-ssl-seguretat.sh`](../../infra/04-ssl-seguretat.sh). Informe complet de
+l'execució: [`informe-04-ssl-seguretat.txt`](informe-04-ssl-seguretat.txt).
 
-Passos previstos:
-1. Crear la CA *CSJ Parkings Root CA* amb `openssl`.
-2. Emetre el certificat per a `csjparkings.local` amb SAN (nom i IP 192.168.56.30).
-3. VirtualHost `:443` amb el certificat, TLS 1.2/1.3 i capçalera HSTS.
-4. Redirecció permanent `http → https`.
-5. Importar el certificat de la CA a Windows (*Entitats de certificació arrel de confiança*).
+```powershell
+scp -r proyecto_parking\infra carlos@192.168.56.30:~
+ssh -t carlos@192.168.56.30 "sudo bash ~/infra/04-ssl-seguretat.sh"
+scp carlos@192.168.56.30:~/informe-04-ssl-seguretat.txt proyecto_parking\docs\sprint2\
+scp carlos@192.168.56.30:~/csj-parkings-ca.crt $env:USERPROFILE\
+```
 
-**[CAPTURA]** cadenat del navegador i detalls del certificat.
+### 5.1 Autoritat de certificació pròpia
 
-## 6. Securització
+**Per què no Let's Encrypt?** Let's Encrypt només emet certificats per a dominis públics que pugui
+verificar des d'Internet. El servidor és en una xarxa privada (`192.168.56.0/24`) amb un domini local
+(`csjparkings.local`), per tant es crea una **CA pròpia** i el seu certificat arrel s'instal·la als
+equips client. És el mateix que fan les empreses a les seves xarxes internes.
 
-Passos previstos:
-- **UFW**: denegar tot l'entrant per defecte; permetre `22/tcp`, `80/tcp`, `443/tcp`;
-  ports dels *exporters* (9100, 9104) **només des de 192.168.56.31**. A `parking-mon`, Grafana (3000) només des de la xarxa interna.
-- **fail2ban**: presons `sshd` i `apache-auth`.
-- **SSH**: `PermitRootLogin no`, `PasswordAuthentication no` (un cop provada la clau).
-- **Apache**: `ServerTokens Prod`, `ServerSignature Off`, `Options -Indexes`, capçaleres
-  `X-Content-Type-Options`, `X-Frame-Options`, `Content-Security-Policy`.
-- **Actualitzacions automàtiques de seguretat**: `unattended-upgrades`.
-- **Aplicació**: sentències preparades PDO (SQL injection), escapament de sortida (XSS),
-  token CSRF als formularis, `password_hash()`, xifrat AES-256 de dades sensibles.
+| Element | Valor |
+|---|---|
+| CA | *CSJ Parkings Root CA* · RSA 4096 · SHA-256 · vàlida 10 anys |
+| Certificat del servidor | `CN=csjparkings.local` · RSA 2048 · vàlid 825 dies (fins al 18/02/2029) |
+| Noms alternatius (SAN) | `csjparkings.local`, `www.csjparkings.local`, `192.168.56.30` |
+| Ubicació | `/etc/ssl/csjparkings/` · claus privades amb permisos `600` (només root) |
 
-**[CAPTURA]** `ufw status verbose`, `fail2ban-client status`.
+```bash
+# CA
+openssl genrsa -out ca.key 4096
+openssl req -x509 -new -key ca.key -sha256 -days 3650 -subj "/C=ES/O=CSJ Parkings/CN=CSJ Parkings Root CA" -out ca.crt
+# Certificat del servidor signat per la CA (amb subjectAltName)
+openssl genrsa -out csjparkings.local.key 2048
+openssl req -new -key csjparkings.local.key -subj "/C=ES/O=CSJ Parkings/CN=csjparkings.local" -out csjparkings.local.csr
+openssl x509 -req -in csjparkings.local.csr -CA ca.crt -CAkey ca.key -CAcreateserial -days 825 -sha256 \
+    -extfile csjparkings.local.ext -out csjparkings.local.crt
+```
 
-## 7. Usuaris i permisos del sistema de fitxers
+**Instal·lació de la CA a l'equip client (Windows)**, sense permisos d'administrador:
+
+```powershell
+Import-Certificate -FilePath "$env:USERPROFILE\csj-parkings-ca.crt" -CertStoreLocation Cert:\CurrentUser\Root
+```
+
+![Windows demana confirmació per instal·lar la CA CSJ Parkings Root CA](img/ssl-01-importar-ca-windows.png)
+
+### 5.2 Apache amb HTTPS
+
+- **Port 80:** només redirigeix (301) a `https://`.
+- **Port 443:** `SSLEngine on`, només **TLS 1.2 i TLS 1.3** (TLS 1.0/1.1 rebutjats).
+- **Capçaleres de seguretat:** `Strict-Transport-Security` (HSTS), `X-Content-Type-Options: nosniff`,
+  `X-Frame-Options: SAMEORIGIN` (*clickjacking*), `Referrer-Policy`, `Permissions-Policy`.
+- **Sense informació del servidor:** `ServerTokens Prod`, `ServerSignature Off`, `TraceEnable Off`;
+  PHP amb `expose_php = Off` (no s'envia `X-Powered-By`).
+
+Comprovació (de l'informe):
+
+```
+HTTP -> 301 https://192.168.56.30/
+HTTP/1.1 200 OK
+Server: Apache
+Strict-Transport-Security: max-age=31536000
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+Referrer-Policy: strict-origin-when-cross-origin
+tls1_1: rebutjat · tls1_2: acceptat · tls1_3: acceptat
+```
+
+### 6.1 phpMyAdmin restringit
+
+`/etc/apache2/conf-available/phpmyadmin-restriccio.conf`:
+
+```apache
+<Location /phpmyadmin>
+    Require ip 192.168.56.0/24 127.0.0.1 ::1
+</Location>
+```
+
+Només s'hi pot accedir des de la xarxa interna i sempre per HTTPS (el port 80 redirigeix).
+
+### 6.2 PHP en producció
+
+`/etc/php/8.1/apache2/conf.d/99-csj.ini`: `display_errors = Off`, `log_errors = On`, `expose_php = Off`
+i cookies de sessió `HttpOnly`, `Secure`, `SameSite=Strict` i `use_strict_mode` (protecció contra robatori
+i fixació de sessió).
+
+### 6.3 SSH
+
+`/etc/ssh/sshd_config.d/10-csj.conf`:
+
+| Directiva | Valor | Motiu |
+|---|---|---|
+| `PermitRootLogin` | `no` | No es pot entrar directament com a root |
+| `PasswordAuthentication` | `no` | Només amb clau: impossible endevinar contrasenyes |
+| `MaxAuthTries` | `3` | Pocs intents per connexió |
+| `X11Forwarding` | `no` | No cal entorn gràfic |
+
+L'script comprova abans que l'usuari té una clau a `authorized_keys`, per no quedar sense accés.
+La consola de VirtualBox continua permetent entrar amb contrasenya en cas d'emergència.
+
+### 6.4 Tallafocs UFW
+
+Política per defecte: **denegar tot el trànsit entrant** i permetre el sortint.
+
+| Port | Origen | Servei |
+|---|---|---|
+| 22/tcp | qualsevol | SSH |
+| 80/tcp | qualsevol | HTTP (redirigeix a HTTPS) |
+| 443/tcp | qualsevol | HTTPS |
+| 9100/tcp | només 192.168.56.31 | node_exporter (monitoratge) |
+| 9104/tcp | només 192.168.56.31 | mysqld_exporter (monitoratge) |
+
+MariaDB (3306) **no** és accessible des de fora: escolta només a `127.0.0.1` i a més el tallafocs el bloqueja.
+
+### 6.5 fail2ban
+
+Presons actives: `sshd` i `apache-auth`. 5 intents fallits en 10 minuts → IP bloquejada 1 hora
+(mitjançant UFW). Per desbloquejar una IP: `sudo fail2ban-client set sshd unbanip <IP>`.
+
+### 6.6 Actualitzacions automàtiques
+
+`unattended-upgrades` activat: cada dia s'actualitza la llista de paquets i s'instal·len les
+actualitzacions de seguretat.
+
+### 7. Usuaris i permisos del sistema de fitxers
 
 | Ruta | Propietari:grup | Permisos | Motiu |
 |---|---|---|---|
-| `/srv/www/csjparkings` | `deploy:www-data` | `750` dirs / `640` fitxers | Apache llegeix però no pot modificar el codi |
-| `/srv/www/csjparkings/config/config.php` | `deploy:www-data` | `640` | Conté les credencials de la BD i la clau de xifrat |
-| `/srv/www/csjparkings/storage` (PDF generats) | `www-data:www-data` | `750` | Única carpeta on Apache pot escriure |
-| `/srv/mysql` | `mysql:mysql` | `700` | Dades de la BD |
-| `/var/backups/csjparkings` | `root:root` | `700` | Còpies locals |
+| `/srv/www`, `/srv/www/csjparkings` | `root:www-data` | `750` | Apache pot llegir, no modificar |
+| `.../public`, `.../config` | `root:www-data` | dirs `750`, fitxers `640` | El codi i la configuració són de només lectura per a Apache |
+| `.../config/config.php` | `root:www-data` | `640` | Conté la contrasenya de `csj_app`; fora de la carpeta pública |
+| `.../storage` | `www-data:www-data` | `750` | Única carpeta on Apache pot escriure (PDF) |
+| `/var/lib/mysql` (→ `/srv/mysql`) | `mysql:mysql` | `700` | Dades de la BD |
+| `/etc/ssl/csjparkings/*.key` | `root:root` | `600` | Claus privades |
+| `/root/csj-credencials.txt` | `root:root` | `600` | Contrasenyes de la BD |
 
-Usuaris del sistema: `deploy` (desplegament del codi), usuari personal de cada membre amb `sudo`,
-`backup` a `parking-mon` (només rep còpies, sense shell interactiu).
+### 7.1 Resum de les mesures de seguretat
+
+| Amenaça | Mesura |
+|---|---|
+| Interceptació de dades (contrasenyes, dades personals) | HTTPS amb TLS 1.2/1.3 i HSTS |
+| Atacs de força bruta | SSH només amb clau, fail2ban, bloqueig d'usuaris a l'aplicació |
+| Accés a serveis interns | UFW (només 22/80/443), MariaDB només local, phpMyAdmin només xarxa interna |
+| Robatori de sessió | Cookies `HttpOnly`, `Secure`, `SameSite=Strict` |
+| Fuga d'informació del servidor | Sense versions d'Apache/PHP, sense errors visibles, sense llistat de directoris |
+| Injecció SQL / XSS (aplicació) | Sentències preparades PDO i `htmlspecialchars()` |
+| Esborrat de dades | Usuari de BD de l'aplicació sense `DELETE`, RAID 1, còpies de seguretat |
+| Vulnerabilitats conegudes | Actualitzacions automàtiques de seguretat |
 
 ## 8. Còpies de seguretat
 

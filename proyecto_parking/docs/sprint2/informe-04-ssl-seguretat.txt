@@ -1,0 +1,153 @@
+Informe SSL i securització · parking-srv · 16/11/2026 17:22:16
+
+==================================================================
+## 0. Comprovacions prèvies
+==================================================================
+OK: web instal·lada i clau SSH de carlos present.
+192.168.56.30 parking-srv csjparkings.local
+
+==================================================================
+## 1. Autoritat de certificació (CA) pròpia i certificat del servidor
+==================================================================
+CA creada.
+Certificat del servidor creat.
+subject=C = ES, ST = Tarragona, L = Tarragona, O = CSJ Parkings, CN = csjparkings.local
+issuer=C = ES, ST = Tarragona, L = Tarragona, O = CSJ Parkings, CN = CSJ Parkings Root CA
+notBefore=Nov 16 16:22:17 2026 GMT
+notAfter=Feb 18 16:22:17 2029 GMT
+X509v3 Subject Alternative Name: 
+    DNS:csjparkings.local, DNS:www.csjparkings.local, IP Address:192.168.56.30
+
+$ ls -l /etc/ssl/csjparkings
+total 24
+-rw-r--r-- 1 root root 2041 nov 16 17:22 ca.crt
+-rw------- 1 root root 3272 nov 16 17:22 ca.key
+-rw-r--r-- 1 root root 1814 nov 16 17:22 csjparkings.local.crt
+-rw-r--r-- 1 root root 1005 nov 16 17:22 csjparkings.local.csr
+-rw-r--r-- 1 root root  187 nov 16 17:22 csjparkings.local.ext
+-rw------- 1 root root 1704 nov 16 17:22 csjparkings.local.key
+
+==================================================================
+## 2. Apache: HTTPS, redirecció i capçaleres de seguretat
+==================================================================
+
+$ apache2ctl configtest
+Syntax OK
+
+$ apache2ctl -S
+VirtualHost configuration:
+*:80                   csjparkings.local (/etc/apache2/sites-enabled/csjparkings.conf:3)
+*:443                  csjparkings.local (/etc/apache2/sites-enabled/csjparkings.conf:11)
+ServerRoot: "/etc/apache2"
+Main DocumentRoot: "/var/www/html"
+Main ErrorLog: "/var/log/apache2/error.log"
+Mutex default: dir="/var/run/apache2/" mechanism=default 
+Mutex mpm-accept: using_defaults
+Mutex watchdog-callback: using_defaults
+Mutex rewrite-map: using_defaults
+Mutex ssl-stapling-refresh: using_defaults
+Mutex ssl-stapling: using_defaults
+Mutex ssl-cache: using_defaults
+PidFile: "/var/run/apache2/apache2.pid"
+Define: DUMP_VHOSTS
+Define: DUMP_RUN_CFG
+User: name="www-data" id=33
+Group: name="www-data" id=33
+
+==================================================================
+## 3. PHP: configuració de producció
+==================================================================
+; CSJ Parkings · PHP en producció
+expose_php = Off
+display_errors = Off
+display_startup_errors = Off
+log_errors = On
+session.use_strict_mode = 1
+session.use_only_cookies = 1
+session.cookie_httponly = 1
+session.cookie_secure = 1
+session.cookie_samesite = Strict
+
+==================================================================
+## 4. SSH: només amb clau i sense root
+==================================================================
+
+$ sshd -t
+maxauthtries 3
+permitrootlogin no
+pubkeyauthentication yes
+passwordauthentication no
+kbdinteractiveauthentication no
+x11forwarding no
+
+==================================================================
+## 5. Tallafocs UFW
+==================================================================
+
+$ ufw status verbose
+Status: active
+Logging: on (low)
+Default: deny (incoming), allow (outgoing), disabled (routed)
+New profiles: skip
+
+To                         Action      From
+--                         ------      ----
+22/tcp                     ALLOW IN    Anywhere                   # SSH
+80/tcp                     ALLOW IN    Anywhere                   # HTTP (redirigeix a HTTPS)
+443/tcp                    ALLOW IN    Anywhere                   # HTTPS
+9100/tcp                   ALLOW IN    192.168.56.31              # node_exporter (monitoratge)
+9104/tcp                   ALLOW IN    192.168.56.31              # mysqld_exporter (monitoratge)
+22/tcp (v6)                ALLOW IN    Anywhere (v6)              # SSH
+80/tcp (v6)                ALLOW IN    Anywhere (v6)              # HTTP (redirigeix a HTTPS)
+443/tcp (v6)               ALLOW IN    Anywhere (v6)              # HTTPS
+
+
+==================================================================
+## 6. fail2ban
+==================================================================
+
+$ fail2ban-client status
+Status
+|- Number of jail:	2
+`- Jail list:	apache-auth, sshd
+
+==================================================================
+## 7. Actualitzacions automàtiques de seguretat
+==================================================================
+
+$ systemctl is-enabled unattended-upgrades
+enabled
+APT::Periodic::Update-Package-Lists "1";
+APT::Periodic::Unattended-Upgrade "1";
+
+==================================================================
+## 8. Comprovacions
+==================================================================
+HTTP -> 301 https://192.168.56.30/
+HTTPS amb la CA pròpia (verificant el certificat):
+Base de dades: <strong class="ok">OK
+Pàrquings (14)
+
+Capçaleres HTTPS:
+HTTP/1.1 200 OK
+Server: Apache
+Strict-Transport-Security: max-age=31536000
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+Referrer-Policy: strict-origin-when-cross-origin
+(No ha d'aparèixer X-Powered-By i Server ha de ser només 'Apache')
+
+Protocols TLS:
+  tls1_1: rebutjat
+  tls1_2: acceptat
+  tls1_3: acceptat
+
+phpMyAdmin per HTTPS des del servidor: HTTP 200
+
+==================================================================
+## FET
+==================================================================
+Web:        https://csjparkings.local/   (o https://192.168.56.30/)
+phpMyAdmin: https://csjparkings.local/phpmyadmin/  (només des de 192.168.56.0/24)
+Certificat de la CA per importar a l'equip client: /home/carlos/csj-parkings-ca.crt
+Informe desat a: /home/carlos/informe-04-ssl-seguretat.txt
