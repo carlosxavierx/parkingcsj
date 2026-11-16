@@ -1,6 +1,6 @@
 # Sprint 1 — Planificació del projecte
 
-## Sistema de Reserves de Places de Pàrquing · Tarraco Parkings (Tarragona)
+## Sistema de Reserves de Places de Pàrquing · CSJ Parkings (Tarragona)
 
 **Metodologia:** desenvolupament per sprints (Scrum lleuger) amb eines de Kanban.
 **Eines de planificació proposades:** Trello o GitHub Projects (tauler Kanban), i documentació en aquest repositori (fases, Gantt i tasques).
@@ -68,7 +68,7 @@
 ### S5 · Frontend usuari (disseny nou)
 | Tasca | Prioritat | Dependència |
 |---|---|---|
-| Disseny web responsiu (CSS nou, identitat Tarraco Parkings) | Alta | — |
+| Disseny web responsiu (CSS nou, identitat CSJ Parkings) | Alta | — |
 | Pàgina inicial amb informació dels pàrquings | Alta | S4 (dades) |
 | Formularis: registre, login, perfil, vehicle | Alta | S4 |
 | Formulari de reserva (pàrquing, data, hora entrada/sortida, preu automàtic) | Alta | S4 |
@@ -155,7 +155,7 @@ Totes ────────────────────────�
 
 ```mermaid
 gantt
-    title Planificació — Tarraco Parkings (Oct–Des 2026)
+    title Planificació — CSJ Parkings (Oct–Des 2026)
     dateFormat  YYYY-MM-DD
     axisFormat  %d %b
 

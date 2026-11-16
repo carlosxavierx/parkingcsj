@@ -1,6 +1,6 @@
 # Sprint 1 — Document de presentació (exposició oral)
 
-## Sistema de Reserves de Places de Pàrquing · Tarraco Parkings (Tarragona)
+## Sistema de Reserves de Places de Pàrquing · CSJ Parkings (Tarragona)
 
 **Durada orientativa:** 10–15 minuts + torn de preguntes.
 **Ponents:** tots els membres de l'equip (1–2 minuts per apartat).
@@ -16,7 +16,7 @@
 - Data i curs.
 
 ### D2 · Objectiu i context del projecte (1 diapositiva · 1 min)
-- L'empresa **Tarraco Parkings** gestiona els pàrquings municipals de Tarragona.
+- L'empresa **CSJ Parkings** gestiona els pàrquings municipals de Tarragona.
 - Necessitat: sistema en línia per **reservar places de pàrquing**, controlar l'accés i fer el pagament.
 - Dos rols: **usuaris finals** i **administradors**.
 

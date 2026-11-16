@@ -1,16 +1,16 @@
 -- =====================================================================
 --  Sprint 1 — Model E/R: Script de creació de la base de dades
---  Projecte: Sistema de Reserves de Places de Pàrquing · Tarraco Parkings
+--  Projecte: Sistema de Reserves de Places de Pàrquing · CSJ Parkings
 --  SGBD: MySQL / MariaDB   ·   Joc de caràcters: utf8mb4
 -- =====================================================================
 
 -- Elimina la base de dades si existeix (per a desenvolupament)
-DROP DATABASE IF EXISTS tarraco_parkings;
-CREATE DATABASE tarraco_parkings
+DROP DATABASE IF EXISTS csj_parkings;
+CREATE DATABASE csj_parkings
     CHARACTER SET utf8mb4
     COLLATE utf8mb4_unicode_ci;
 
-USE tarraco_parkings;
+USE csj_parkings;
 
 -- ---------------------------------------------------------------------
 -- 1. CLIENTS  (usuaris registrats; els administradors es marquen amb es_admin)
@@ -203,11 +203,11 @@ INSERT INTO places (id_parquing, codi_placa, tipus, estat) VALUES
 -- Exemple per a la contrasenya "Demo1234!":
 --   SELECT password_hash_en_php;  (genera: $2y$10$....)
 INSERT INTO clients (nom, primer_cognom, segon_cognom, email, telefon, password_hash, es_admin, actiu, data_registre) VALUES
-('Client', 'Demostració', 'Tarraco', 'client@demo.cat', '977000000', '$2y$10$CANVIAR_A_UN_HASH_REAL', 0, 1, NOW());
+('Client', 'Demostració', 'CSJ', 'client@demo.cat', '977000000', '$2y$10$CANVIAR_A_UN_HASH_REAL', 0, 1, NOW());
 
 -- Administrador de demostració (mateixa nota sobre el hash)
 INSERT INTO clients (nom, primer_cognom, segon_cognom, email, telefon, password_hash, es_admin, actiu, data_registre) VALUES
-('Admin', 'Tarraco', 'Parkings', 'admin@demo.cat', '977111111', '$2y$10$CANVIAR_A_UN_HASH_REAL', 1, 1, NOW());
+('Admin', 'CSJ', 'Parkings', 'admin@demo.cat', '977111111', '$2y$10$CANVIAR_A_UN_HASH_REAL', 1, 1, NOW());
 
 -- Vehicle de demostració per al client
 INSERT INTO vehicles (id_client, matricula, marca, model) VALUES

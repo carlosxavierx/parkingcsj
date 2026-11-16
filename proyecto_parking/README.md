@@ -1,7 +1,7 @@
-# Tarraco Parkings — Sistema de Reserves de Places de Pàrquing
+# CSJ Parkings — Sistema de Reserves de Places de Pàrquing
 
 Aplicació web per reservar places de pàrquing als pàrquings municipals de
-Tarragona, gestionada per l'empresa **Tarraco Parkings**.
+Tarragona, gestionada per l'empresa **CSJ Parkings**.
 
 ## Stack
 

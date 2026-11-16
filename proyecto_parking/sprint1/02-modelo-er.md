@@ -1,6 +1,6 @@
 # Sprint 1 — Model Entitat-Relació (E/R) de la base de dades
 
-## Sistema de Reserves de Places de Pàrquing · Tarraco Parkings (Tarragona)
+## Sistema de Reserves de Places de Pàrquing · CSJ Parkings (Tarragona)
 
 **Stack:** MySQL / MariaDB · **Joc de caràcters:** `utf8mb4` (suporta accents i emojis)
 
@@ -171,7 +171,7 @@ Informació completa de cada reserva.
 | Camp | Tipus | Claus / restriccions | Descripció |
 |---|---|---|---|
 | `id_reserva` | INT | **PK**, AUTO_INCREMENT | Identificador de la reserva. |
-| `numero_reserva` | VARCHAR(14) | **UNIQUE**, NOT NULL | Número de reserva auto-generat (ex. `TPK-20261015-000123`). |
+| `numero_reserva` | VARCHAR(14) | **UNIQUE**, NOT NULL | Número de reserva auto-generat (ex. `CSJ-20261015-000123`). |
 | `id_client` | INT | **FK → clients.id_client** | Client que fa la reserva. |
 | `id_vehicle` | INT | **FK → vehicles.id_vehicle** | Vehicle de la reserva. |
 | `id_parquing` | INT | **FK → parquings.id_parquing** | Pàrquing reservat. |

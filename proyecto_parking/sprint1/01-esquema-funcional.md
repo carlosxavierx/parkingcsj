@@ -1,9 +1,9 @@
 # Sprint 1 — Esquema funcional
 
-## Sistema de Reserves de Places de Pàrquing · Tarraco Parkings (Tarragona)
+## Sistema de Reserves de Places de Pàrquing · CSJ Parkings (Tarragona)
 
 **Projecte:** Sistema de Reserves de Places de Pàrquing per a la ciutat de Tarragona
-**Empresa:** Tarraco Parkings
+**Empresa:** CSJ Parkings
 **Stack:** PHP + MariaDB/MySQL + Apache2 (servidor GNU/Linux)
 **Fase:** Sprint 1 · Anàlisi i disseny
 
@@ -152,7 +152,7 @@ flowchart LR
 | ID | Procés | Descripció |
 |---|---|---|
 | CU-30 | **Calcular preu** | Aplica les tarifes (1ª-2ª hora 1,90 €; 3ª hora 0,20 €; màxim diari 4,00 €; nocturna 0,60 €) i suma un 10% de despeses de gestió. |
-| CU-31 | **Generar número de reserva** | Crea un identificador únic (ex. `TPK-20261015-000123`). |
+| CU-31 | **Generar número de reserva** | Crea un identificador únic (ex. `CSJ-20261015-000123`). |
 | CU-32 | **Generar PDF** | Genera el PDF de confirmació amb les dades de la reserva. |
 | CU-33 | **Control d'accés** | El lector de matrícules detecta entrada/sortida, verifica les reserves actives i obre la barrera. |
 | CU-34 | **Cobrar excés de temps** | Si el vehicle excedeix el temps reservat, calcula l'import addicional i cobra amb el mateix mètode de pagament. |

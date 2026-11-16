@@ -1,0 +1,142 @@
+Informe Apache + PHP + MariaDB · parking-srv · 16/11/2026 14:39:21
+
+==================================================================
+## 0. Comprovacions prèvies
+==================================================================
+OK: /srv muntat sobre el RAID i scripts SQL presents.
+
+==================================================================
+## 1. Instal·lació de paquets
+==================================================================
+
+$ apache2 -v
+Server version: Apache/2.4.52 (Ubuntu)
+Server built:   2026-11-12T13:00:12
+
+$ php -v
+PHP 8.1.2-1ubuntu2.28 (cli) (built: Oct 19 2026 18:54:45) (NTS)
+Copyright (c) The PHP Group
+Zend Engine v4.1.2, Copyright (c) Zend Technologies
+    with Zend OPcache v8.1.2-1ubuntu2.28, Copyright (c), by Zend Technologies
+
+$ mariadb --version
+mariadb  Ver 15.1 Distrib 10.6.23-MariaDB, for debian-linux-gnu (x86_64) using  EditLine wrapper
+
+==================================================================
+## 2. Dades de MariaDB al RAID (/srv/mysql -> /var/lib/mysql)
+==================================================================
+Ja estava muntat:
+TARGET         SOURCE           FSTYPE OPTIONS
+/var/lib/mysql /dev/md0[/mysql] ext4   rw,relatime
+
+==================================================================
+## 3. Configuració de MariaDB (binary logs, utf8mb4, només local)
+==================================================================
+
+$ systemctl is-active mariadb
+active
+Variable_name	Value
+bind_address	127.0.0.1
+character_set_server	utf8mb4
+datadir	/var/lib/mysql/
+log_bin	ON
+
+==================================================================
+## 4. Securització bàsica de MariaDB
+==================================================================
+Usuaris anònims i BD de prova eliminats. root només entra amb unix_socket (sudo).
+
+==================================================================
+## 5. Base de dades csj_parkings (schema.sql + seed.sql)
+==================================================================
+taula	files
+parquings	14
+places	323
+tarifes	9
+usuaris	3
+reserves	1
+
+==================================================================
+## 6. Usuaris de la base de dades (privilegis mínims)
+==================================================================
+Es reutilitzen les contrasenyes de /root/csj-credencials.txt
+GRANT USAGE ON *.* TO `csj_app`@`localhost` IDENTIFIED BY PASSWORD '***'
+GRANT SELECT, INSERT, UPDATE ON `csj_parkings`.* TO `csj_app`@`localhost`
+GRANT RELOAD, PROCESS, BINLOG MONITOR ON *.* TO `csj_backup`@`localhost` IDENTIFIED BY PASSWORD '***'
+GRANT SELECT, LOCK TABLES, SHOW VIEW, EVENT, TRIGGER ON `csj_parkings`.* TO `csj_backup`@`localhost`
+GRANT USAGE ON *.* TO `csj_admin`@`localhost` IDENTIFIED BY PASSWORD '***'
+GRANT ALL PRIVILEGES ON `csj_parkings`.* TO `csj_admin`@`localhost`
+
+==================================================================
+## 7. phpMyAdmin
+==================================================================
+Package: phpmyadmin
+Version: 4:5.1.1+dfsg1-5ubuntu1
+
+==================================================================
+## 8. Web: carpetes, configuració i pàgina de prova
+==================================================================
+
+$ ls -la /srv/www /srv/www/csjparkings /srv/www/csjparkings/config
+/srv/www:
+total 12
+drwxr-x--- 3 root www-data 4096 nov 16 14:39 .
+drwxr-xr-x 5 root root     4096 nov 16 14:01 ..
+drwxr-x--- 5 root www-data 4096 nov 16 14:39 csjparkings
+
+/srv/www/csjparkings:
+total 20
+drwxr-x--- 5 root     www-data 4096 nov 16 14:39 .
+drwxr-x--- 3 root     www-data 4096 nov 16 14:39 ..
+drwxr-x--- 2 root     www-data 4096 nov 16 14:39 config
+drwxr-x--- 2 root     www-data 4096 nov 16 14:39 public
+drwxr-x--- 2 www-data www-data 4096 nov 16 14:39 storage
+
+/srv/www/csjparkings/config:
+total 12
+drwxr-x--- 2 root www-data 4096 nov 16 14:39 .
+drwxr-x--- 5 root www-data 4096 nov 16 14:39 ..
+-rw-r----- 1 root www-data  282 nov 16 14:39 config.php
+
+==================================================================
+## 9. Apache: VirtualHost csjparkings.local
+==================================================================
+
+$ apache2ctl configtest
+Syntax OK
+
+$ apache2ctl -S
+VirtualHost configuration:
+*:80                   csjparkings.local (/etc/apache2/sites-enabled/csjparkings.conf:2)
+ServerRoot: "/etc/apache2"
+Main DocumentRoot: "/var/www/html"
+Main ErrorLog: "/var/log/apache2/error.log"
+Mutex default: dir="/var/run/apache2/" mechanism=default 
+Mutex mpm-accept: using_defaults
+Mutex watchdog-callback: using_defaults
+Mutex rewrite-map: using_defaults
+PidFile: "/var/run/apache2/apache2.pid"
+Define: DUMP_VHOSTS
+Define: DUMP_RUN_CFG
+User: name="www-data" id=33
+Group: name="www-data" id=33
+
+==================================================================
+## 10. Comprovació final
+==================================================================
+apache2: active
+mariadb: active
+
+Pàgina web (http://localhost/):
+Base de dades: <strong class="ok">OK
+Pàrquings (14)
+
+phpMyAdmin (http://localhost/phpmyadmin/): HTTP 200
+
+==================================================================
+## FET
+==================================================================
+Web:        http://192.168.56.30/
+phpMyAdmin: http://192.168.56.30/phpmyadmin/  (usuari: csj_admin)
+La contrasenya de csj_admin es pot consultar amb:  sudo grep CSJ_ADMIN /root/csj-credencials.txt
+Informe desat a: /home/carlos/informe-03-lamp.txt
