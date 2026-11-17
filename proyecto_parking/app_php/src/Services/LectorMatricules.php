@@ -63,6 +63,15 @@ final class LectorMatricules
                     'Reserva ' . $reserva['numero_reserva'] . ($placa ? ' · plaça ' . $placa['codi_placa'] : ''),
                     $vehicle, $reserva);
             }
+            // Arriba massa d'hora: té una reserva més tard avui en aquest pàrquing
+            $futura = DB::one("SELECT numero_reserva, entrada_prevista FROM reserves WHERE id_vehicle = ? AND id_parquing = ?
+                               AND estat IN ('pendent','confirmada') AND entrada_prevista > ? AND DATE(entrada_prevista) = ?
+                               ORDER BY entrada_prevista LIMIT 1", [$vehicle['id_vehicle'], $this->idParquing, $araSql, $ara->format('Y-m-d')]);
+            if ($futura) {
+                $desDe = (new \DateTimeImmutable($futura['entrada_prevista']))->modify('-' . self::MINUTS_ANTELACIO . ' minutes');
+                return $this->resposta($mat, 'entrada', $araSql, false,
+                    "Massa d'hora: la reserva {$futura['numero_reserva']} permet entrar a partir de les " . $desDe->format('H:i'), $vehicle, null);
+            }
         }
 
         // Sense reserva vigent: places de rotació (no reservables) lliures?

@@ -21,7 +21,7 @@ final class Csrf
     {
         $enviat = $_POST['_csrf'] ?? ($_SERVER['HTTP_X_CSRF_TOKEN'] ?? '');
         if (!is_string($enviat) || empty($_SESSION['_csrf']) || !hash_equals($_SESSION['_csrf'], $enviat)) {
-            http_response_code(419);
+            http_response_code(403);   // (Apache no reconeix el codi 419 i el convertiria en 500)
             View::render('errors/419', ['titol' => 'Sessió caducada']);
             exit;
         }
