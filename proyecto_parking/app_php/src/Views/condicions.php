@@ -25,7 +25,7 @@
         <li>Les reserves no s'eliminen mai: es conserven com a cancel·lades per a l'historial.</li>
     </ul>
 
-    <h2>4. Privacitat i protecció de dades</h2>
+    <h2 id="privacitat">4. Privacitat i protecció de dades</h2>
     <ul>
         <li>Les dades personals es tracten d'acord amb el Reglament General de Protecció de Dades (RGPD) i la LOPDGDD,
             amb l'única finalitat de gestionar les reserves.</li>

@@ -14,7 +14,10 @@ try {
     <meta name="csrf-token" content="<?= e(App\Core\Csrf::token()) ?>">
     <title><?= e($titol ?? 'CSJ Parkings') ?> · CSJ Parkings</title>
     <link rel="icon" type="image/png" href="/img/favicon.png">
-    <link rel="stylesheet" href="/css/app.css?v=1">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&display=swap">
+    <link rel="stylesheet" href="/css/app.css?v=2">
     <?php if (!empty($mapa)): ?>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     <?php endif; ?>
@@ -22,7 +25,10 @@ try {
 <body>
 <header class="capcalera">
     <div class="contenidor capcalera-int">
-        <a href="/" class="logo"><img src="/img/logo-horizontal.png" alt="CSJ Parkings"></a>
+        <a href="/" class="logo" aria-label="CSJ Parkings · Online Parking Solutions">
+            <img src="/img/logo-mark.png" alt="" class="logo-marca">
+            <span class="logo-text"><span class="logo-nom">CSJ PARKINGS</span><span class="logo-eslogan">Online Parking Solutions</span></span>
+        </a>
         <button class="menu-boto" type="button" aria-label="Menú" data-menu>☰</button>
         <nav class="menu" id="menu">
             <a href="/" class="<?= ruta_activa('/') ?>">Inici</a>
@@ -63,11 +69,49 @@ try {
 </main>
 
 <footer class="peu">
-    <div class="contenidor peu-int">
-        <img src="/img/logo-mark.png" alt="" class="peu-logo">
-        <div>
-            <strong>CSJ Parkings</strong> · Reserva de places als pàrquings municipals de Tarragona<br>
-            <a href="/condicions">Condicions d'ús i privacitat</a> · Projecte ASIX2 · <?= date('Y') ?>
+    <div class="peu-franja"></div>
+    <div class="contenidor peu-graella">
+        <div class="peu-marca">
+            <a href="/" class="logo logo-peu" aria-label="CSJ Parkings · Online Parking Solutions">
+                <img src="/img/logo-mark.png" alt="" class="logo-marca">
+                <span class="logo-text"><span class="logo-nom">CSJ PARKINGS</span><span class="logo-eslogan">Online Parking Solutions</span></span>
+            </a>
+            <p>Reserva la teva plaça als pàrquings municipals de Tarragona en un minut.
+                Entra amb la matrícula: la barrera s'obre sola.</p>
+        </div>
+        <nav class="peu-col" aria-label="Enllaços">
+            <h3>Navegació</h3>
+            <a href="/">Inici i pàrquings</a>
+            <?php if ($u): ?>
+                <a href="/reserves/nova">Nova reserva</a>
+                <a href="/reserves">Les meves reserves</a>
+                <a href="/perfil">El meu perfil</a>
+            <?php else: ?>
+                <a href="/registre">Crear compte</a>
+                <a href="/login">Iniciar sessió</a>
+            <?php endif; ?>
+        </nav>
+        <div class="peu-col">
+            <h3>Informació</h3>
+            <a href="/condicions">Condicions d'ús</a>
+            <a href="/condicions#privacitat">Privacitat i protecció de dades</a>
+            <a href="/">Tarifes i places lliures</a>
+            <a href="/#mapa">Mapa dels pàrquings</a>
+        </div>
+        <div class="peu-col">
+            <h3>Contacte</h3>
+            <span>📍 Tarragona</span>
+            <span>✉️ info@csjparkings.cat</span>
+            <span>🕒 Atenció: dl.–dv. de 9 a 18 h</span>
+            <div class="peu-segells">
+                <span>🔒 HTTPS</span><span>🛡️ Dades xifrades</span>
+            </div>
+        </div>
+    </div>
+    <div class="peu-inferior">
+        <div class="contenidor peu-inferior-int">
+            <span>© <?= date('Y') ?> CSJ Parkings · Projecte ASIX2</span>
+            <span>Pagaments simulats: no es fa cap càrrec real</span>
         </div>
     </div>
 </footer>
