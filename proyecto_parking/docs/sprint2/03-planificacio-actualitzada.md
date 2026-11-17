@@ -127,7 +127,7 @@ gantt
 |---|---|---|
 | dg 15/11 | Revisió de l'enunciat, arquitectura, planificació actualitzada, E/R actualitzat i scripts SQL · VM `parking-srv` i `parking-mon` creades i accessibles per SSH | Incidència: l'instal·lador es bloqueja amb 1 GB de RAM (resolta amb 2 GB temporals) |
 | dl 16/11 | Pas 1 (actualització, zona horària, claus SSH) i RAID 1 creat, provat (fallada + reconstrucció) i persistent després de reiniciar · Apache + PHP 8.1, MariaDB (dades al RAID, binlogs), BD creada amb els scripts, usuaris de BD i phpMyAdmin | Incidència 403 per permisos de /srv/www (resolta) · Canvi de nom a CSJ Parkings · SSL amb CA pròpia, UFW, fail2ban, SSH només amb clau, PHP i Apache securitzats |
-| dt 17/11 | Còpies de seguretat completes i incrementals programades, enviades a parking-mon i restauració provada | |
+| dt 17/11 | Còpies de seguretat completes i incrementals programades, enviades a parking-mon i restauració provada · Monitoratge (Prometheus + Grafana, 7 alertes) i securització de parking-mon | Rellotge de les VM endarrerit en restaurar l'estat desat (resolt sincronitzant l'hora) |
 | dc 18/11 | | |
 | dj 19/11 | | |
 | dv 20/11 | | |

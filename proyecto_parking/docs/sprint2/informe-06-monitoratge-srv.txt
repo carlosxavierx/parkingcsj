@@ -1,0 +1,8 @@
+Informe monitoratge (parking-srv) · parking-srv · 17/11/2026 01:42:00
+
+==================================================================
+## 1. Instal·lació dels exporters
+==================================================================
+E: Release file for http://es.archive.ubuntu.com/ubuntu/dists/jammy-updates/InRelease is not valid yet (invalid for another 3h 15min 14s). Updates for this repository will not be applied.
+E: Release file for http://es.archive.ubuntu.com/ubuntu/dists/jammy-backports/InRelease is not valid yet (invalid for another 1h 30min 17s). Updates for this repository will not be applied.
+E: Release file for http://security.ubuntu.com/ubuntu/dists/jammy-security/InRelease is not valid yet (invalid for another 4h 6min 19s). Updates for this repository will not be applied.

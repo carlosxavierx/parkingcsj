@@ -1,0 +1,52 @@
+# CSJ Parkings · regles d'alerta de Prometheus
+groups:
+  - name: csj-parkings
+    rules:
+      - alert: ServidorCaigut
+        expr: up{job="node"} == 0
+        for: 1m
+        labels: {severitat: critica}
+        annotations:
+          resum: "El servidor {{ $labels.host }} no respon"
+
+      - alert: WebNoRespon
+        expr: probe_success{job="web_https"} == 0
+        for: 1m
+        labels: {severitat: critica}
+        annotations:
+          resum: "La web {{ $labels.instance }} no respon per HTTPS"
+
+      - alert: MariaDBAturat
+        expr: mysql_up == 0 or up{job="mysqld"} == 0
+        for: 1m
+        labels: {severitat: critica}
+        annotations:
+          resum: "MariaDB no està disponible a {{ $labels.host }}"
+
+      - alert: RAIDDegradat
+        expr: node_md_disks{state="failed"} > 0 or (node_md_disks_required - ignoring(state) node_md_disks{state="active"}) > 0
+        for: 1m
+        labels: {severitat: critica}
+        annotations:
+          resum: "El RAID {{ $labels.device }} de {{ $labels.host }} està degradat"
+
+      - alert: DiscGairebePle
+        expr: (1 - node_filesystem_avail_bytes{fstype="ext4"} / node_filesystem_size_bytes{fstype="ext4"}) * 100 > 85
+        for: 5m
+        labels: {severitat: avis}
+        annotations:
+          resum: "{{ $labels.mountpoint }} de {{ $labels.host }} està ple al {{ $value | printf \"%.0f\" }} %"
+
+      - alert: MemoriaAlta
+        expr: (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * 100 > 90
+        for: 5m
+        labels: {severitat: avis}
+        annotations:
+          resum: "{{ $labels.host }} fa servir més del 90 % de la memòria"
+
+      - alert: CertificatCaducaAviat
+        expr: (probe_ssl_earliest_cert_expiry - time()) / 86400 < 30
+        for: 1h
+        labels: {severitat: avis}
+        annotations:
+          resum: "El certificat de {{ $labels.instance }} caduca en menys de 30 dies"

@@ -13,10 +13,10 @@
 | 3 | Apache2 + PHP | parking-srv | ✅ |
 | 4 | MariaDB + phpMyAdmin | parking-srv | ✅ |
 | 5 | Certificat SSL (HTTPS) | parking-srv | ✅ |
-| 6 | Securització: tallafocs, fail2ban, SSH, Apache | parking-srv ✅ · parking-mon al pas 9 | 🔧 |
+| 6 | Securització: tallafocs, fail2ban, SSH, Apache | tots dos | ✅ |
 | 7 | Usuaris i permisos del sistema de fitxers | parking-srv | ✅ |
-| 8 | Còpies de seguretat completes i incrementals | srv → mon | ⬜ |
-| 9 | Monitoratge (Prometheus + Grafana) | parking-mon | ⬜ |
+| 8 | Còpies de seguretat completes i incrementals | srv → mon | ✅ |
+| 9 | Monitoratge (Prometheus + Grafana) | parking-mon | ✅ |
 | 10 | Alta disponibilitat | tots dos | ⬜ |
 | 11 | Proves finals de la infraestructura | tots dos | ⬜ |
 
@@ -420,34 +420,180 @@ actualitzacions de seguretat.
 | Esborrat de dades | Usuari de BD de l'aplicació sense `DELETE`, RAID 1, còpies de seguretat |
 | Vulnerabilitats conegudes | Actualitzacions automàtiques de seguretat |
 
-## 8. Còpies de seguretat
+## 8. Còpies de seguretat completes i incrementals (parking-srv → parking-mon)
 
-| Tipus | Què | Quan (`cron`) | Retenció |
+Scripts: [`infra/csj-backup.sh`](../../infra/csj-backup.sh) (fa les còpies),
+[`infra/05-copies-srv.sh`](../../infra/05-copies-srv.sh) (instal·lació i prova a parking-srv) i
+[`infra/05-copies-mon.sh`](../../infra/05-copies-mon.sh) (destí a parking-mon).
+Informes: [`informe-05-copies-installar.txt`](informe-05-copies-installar.txt),
+[`informe-05-copies-mon.txt`](informe-05-copies-mon.txt) i [`informe-05-copies-prova.txt`](informe-05-copies-prova.txt).
+
+### 8.1 Estratègia
+
+| Tipus | Què es copia | Com | Quan (`cron`) | Retenció |
+|---|---|---|---|---|
+| **Completa** | Base de dades `csj_parkings` | `mysqldump --single-transaction --flush-logs --master-data=2` + `gzip` + suma SHA-256 | Diumenge 02:00 | 28 dies |
+| **Completa** | Web i configuració (`/srv/www`, Apache, MariaDB, PHP, SSL, SSH, UFW, fail2ban) | `tar.gz` | Diumenge 02:00 | 28 dies |
+| **Incremental** | Tots els canvis de la BD des de l'última còpia | *Binary logs* de MariaDB tancats (`mysqladmin flush-logs`) | Cada dia 02:30 | 35 dies |
+
+- **`--single-transaction`**: còpia coherent sense aturar l'aplicació (InnoDB).
+- **`--flush-logs --master-data=2`**: en començar la còpia completa s'obre un *binary log* nou i se n'anota
+  la posició dins del fitxer. Les còpies incrementals parteixen d'aquest punt.
+- **Usuari de BD `csj_backup`** amb els privilegis justos; les seves credencials són a
+  `/root/.my-backup.cnf` (permisos `600`).
+- **Còpia fora del servidor:** després de cada còpia, `rsync` per SSH envia tot a parking-mon
+  (`/srv/backups/parking-srv`). Es fa servir una **clau SSH dedicada** que a parking-mon només s'accepta:
+  - des de `192.168.56.30` (`from=`),
+  - amb `restrict` (sense terminal ni reenviaments),
+  - per a l'usuari de sistema `backup`, sense contrasenya.
+- **Sense `--delete`:** si algú atacava parking-srv i n'esborrava les còpies, les de parking-mon es
+  conservarien. La retenció a parking-mon la fa un `cron` propi (35 dies).
+- **Registre:** `/var/log/csj-backup.log`.
+
+Programació (`/etc/cron.d/csj-backup` a parking-srv):
+
+```
+0  2 * * 0  root  /usr/local/sbin/csj-backup full
+30 2 * * *  root  /usr/local/sbin/csj-backup incr
+```
+
+### 8.2 Prova de còpia i restauració
+
+La prova (`sudo bash ~/infra/05-copies-srv.sh prova`) segueix aquests passos:
+
+1. **Còpia completa.** La còpia comença al *binary log* `mysql-bin.000006`, posició 385.
+2. **Canvi a la base de dades** després de la còpia completa: s'insereix un registre de prova a `historial_reserves`.
+3. **Còpia incremental:** es copien els *binary logs* tancats.
+4. **Comprovació a parking-mon:** les còpies hi són.
+5. **Restauració en una BD temporal** (`csj_restauracio`):
+   - Només amb la còpia completa, el canvi de prova **no hi és** (0).
+   - Aplicant també les incrementals des de la posició anotada (`mysqlbinlog --start-position=385`),
+     el canvi **sí que hi és** (1).
+   - El nombre de files de totes les taules coincideix amb l'original.
+6. **Neteja:** s'esborren la BD temporal i el registre de prova.
+
+Resultat de la prova (de l'informe):
+
+```
+a) Es restaura la còpia completa: csj_parkings_full_20261117-005200.sql.gz
+   Canvi present només amb la completa: 0 (ha de ser 0)
+b) S'apliquen les incrementals des de mysql-bin.000006 posició 385
+   Canvi present després d'aplicar les incrementals: 1 (ha de ser 1)
+
+Comparació de files (original / restaurada):
+  parquings            14 / 14
+  places               323 / 323
+  tarifes              9 / 9
+  usuaris              3 / 3
+  reserves             1 / 1
+  historial_reserves   2 / 2
+```
+
+### 8.3 Com restaurar en cas de desastre
+
+```bash
+# 1. Còpia completa més recent
+zcat /srv/backups/parking-srv/full/csj_parkings_full_AAAAMMDD-HHMMSS.sql.gz | sudo mariadb csj_parkings
+# 2. Posició on comencen les incrementals
+zcat .../csj_parkings_full_AAAAMMDD-HHMMSS.sql.gz | grep -m1 "CHANGE MASTER TO"
+# 3. Aplicar els binary logs des d'aquella posició (el primer amb --start-position)
+zcat .../incr/mysql-bin.00000N.gz > /tmp/mysql-bin.00000N   # (per a cada fitxer)
+mysqlbinlog --start-position=POS /tmp/mysql-bin.00000N /tmp/mysql-bin.00000M ... | sudo mariadb
+```
+
+## 9. Monitoratge (parking-mon) i 6. securització de parking-mon
+
+El monitoratge es fa en un **servidor a part** (parking-mon), tal com recomana l'enunciat: si parking-srv
+cau, parking-mon ho continua detectant.
+
+Scripts: [`infra/06-monitoratge-srv.sh`](../../infra/06-monitoratge-srv.sh) (exporters a parking-srv) i
+[`infra/06-monitoratge-mon.sh`](../../infra/06-monitoratge-mon.sh) (Prometheus, Grafana i securització de parking-mon).
+Fitxers de configuració: carpeta [`infra/monitoratge/`](../../infra/monitoratge/).
+
+```powershell
+scp -r proyecto_parking\infra carlos@192.168.56.30:~
+scp -r proyecto_parking\infra $env:USERPROFILE\csj-parkings-ca.crt carlos@192.168.56.31:~
+ssh -t carlos@192.168.56.30 "sudo bash ~/infra/06-monitoratge-srv.sh"
+ssh -t carlos@192.168.56.31 "sudo bash ~/infra/06-monitoratge-mon.sh"
+```
+
+### 9.1 Arquitectura del monitoratge
+
+| Component | Servidor | Port | Funció |
 |---|---|---|---|
-| **Completa** | `mysqldump --single-transaction --routines --flush-logs` comprimit | Diumenge 02:00 | 4 setmanes |
-| **Incremental** | *Binary logs* de MariaDB tancats des de l'última còpia | Cada dia 02:30 | Fins la següent completa + 1 setmana |
-| Fitxers de la web i configuració | `tar` de `/srv/www` i `/etc/apache2`, `/etc/mysql` | Diumenge 03:00 | 4 setmanes |
+| **node_exporter** 1.3.1 | parking-srv i parking-mon | 9100 | CPU, memòria, disc, xarxa i **estat del RAID** |
+| **mysqld_exporter** | parking-srv | 9104 | MariaDB: disponibilitat, connexions, consultes |
+| **blackbox_exporter** 0.19 | parking-mon | 9115 | Comprova que `https://csjparkings.local/` respon **200** amb un **certificat vàlid** (de la nostra CA) |
+| **Prometheus** 2.31 | parking-mon | 9090 | Recull les mètriques cada 15 s, avalua les alertes, retenció 15 dies |
+| **Grafana** 13.3 | parking-mon | 3000 | Tauler visual *CSJ Parkings · Infraestructura* |
 
-- Les còpies es fan a `parking-srv` i s'envien a `parking-mon` amb `rsync` per SSH (clau dedicada).
-- Registre de cada execució a `/var/log/tp-backup.log`.
-- **Prova de restauració**: restaurar la completa + aplicar els *binlogs* (`mysqlbinlog | mariadb`)
-  en una BD de prova i comparar.
+- **mysqld_exporter** fa servir un usuari de BD propi, `csj_exporter`, amb només `PROCESS, REPLICATION CLIENT,
+  SLAVE MONITOR` i lectura de `performance_schema` (màxim 3 connexions). La contrasenya és a
+  `/etc/default/prometheus-mysqld-exporter` amb permisos `600`.
+- Els ports 9100 i 9104 de parking-srv **només** són accessibles des de parking-mon (regla d'UFW de l'apartat 6.4).
+- Tots els serveis tenen `Restart=on-failure` (es reinicien sols si cauen).
 
-**[CAPTURA]** `crontab -l`, fitxers a `parking-mon`, prova de restauració.
+Objectius de Prometheus després de la instal·lació (de l'informe):
 
-## 9. Monitoratge (parking-mon)
+```
+mysqld     192.168.56.30:9104           up
+node       192.168.56.30:9100           up
+node       localhost:9100               up
+prometheus localhost:9090               up
+web_https  https://csjparkings.local/   up    (HTTP 200, 0,02 s, probe_success 1)
+```
 
-| Component | On | Què vigila |
+### 9.2 Alertes
+
+Fitxer [`csj-alertes.yml`](../../infra/monitoratge/csj-alertes.yml) (Prometheus):
+
+| Alerta | Condició | Gravetat |
 |---|---|---|
-| Prometheus | parking-mon | Recull i guarda les mètriques (retenció 15 dies) |
-| Grafana | parking-mon | Taulers: estat del servidor, CPU, RAM, disc, RAID, MariaDB, web |
-| node_exporter | tots dos | CPU, memòria, disc, xarxa, **estat del RAID** (`node_md_*`) |
-| mysqld_exporter | parking-srv | MariaDB actiu, connexions, consultes |
-| blackbox_exporter | parking-mon | La web respon per HTTPS i caducitat del certificat |
+| `ServidorCaigut` | node_exporter no respon durant 1 min | crítica |
+| `WebNoRespon` | la web no respon per HTTPS durant 1 min | crítica |
+| `MariaDBAturat` | MariaDB no respon durant 1 min | crítica |
+| `RAIDDegradat` | algun disc del RAID fallit o menys discos actius dels necessaris | crítica |
+| `DiscGairebePle` | un sistema de fitxers ext4 supera el 85 % | avís |
+| `MemoriaAlta` | memòria utilitzada > 90 % durant 5 min | avís |
+| `CertificatCaducaAviat` | el certificat SSL caduca en menys de 30 dies | avís |
 
-Alertes previstes: servidor caigut, web no respon, RAID degradat, disc > 85 %, MariaDB aturat.
+### 9.3 Tauler de Grafana
 
-**[CAPTURA]** taulers de Grafana i una alerta provocada (aturar Apache).
+Grafana s'instal·la des del repositori oficial i es configura automàticament (*provisioning*): la font de
+dades Prometheus i el tauler [`grafana-csj-infraestructura.json`](../../infra/monitoratge/grafana-csj-infraestructura.json)
+es creen sols i no es poden modificar des de la web.
+
+- Accés de **només lectura sense usuari** (rol *Viewer*) des de la xarxa interna: `http://192.168.56.31:3000`.
+- Administració amb l'usuari `admin` (contrasenya aleatòria a `/root/csj-credencials.txt`).
+- Registre de nous usuaris desactivat i sense enviament d'estadístiques a Grafana Labs.
+
+Contingut del tauler:
+- **Estat dels serveis:** servidors, web HTTPS, MariaDB, discos actius del RAID 1, dies que falten perquè caduqui
+  el certificat, alertes actives, temps de resposta de la web, temps en marxa i connexions a MariaDB.
+- **Recursos:** CPU, memòria, disc (incloent-hi `/srv`, el RAID) i xarxa interna dels dos servidors.
+- **Web i base de dades:** temps de resposta de la web i consultes per segon a MariaDB.
+
+![Tauler de Grafana: tots els serveis OK, RAID amb 2 discos i certificat vàlid 824 dies](img/mon-15-grafana-tauler.png)
+
+> **Incidència resolta:** en la primera versió del tauler, el panell *Servidors* mostrava un tercer valor
+> «CAIGUT». Era una sèrie antiga creada mentre Prometheus arrencava amb la seva configuració per defecte.
+> Es va corregir fent que els panells d'estat mostrin el **valor actual** (consulta *instant*) en lloc
+> de l'últim valor de les darreres 3 hores.
+
+> **Nota:** el paquet `prometheus` d'Ubuntu 22.04 no inclou la interfície web pròpia de Prometheus
+> (`/targets` retorna 404); només la API (`/api/v1/...`). La visualització es fa amb Grafana.
+
+### 6.7 Securització de parking-mon
+
+Mateixes mesures que a parking-srv:
+
+| Mesura | Configuració |
+|---|---|
+| SSH | Només amb clau, sense root, 3 intents (`/etc/ssh/sshd_config.d/10-csj.conf`) |
+| Tallafocs UFW | Denegar tot l'entrant; permetre 22/tcp; Grafana (3000) i Prometheus (9090) **només des de 192.168.56.0/24** |
+| fail2ban | Presó `sshd` (s'ignora 192.168.56.30 perquè les còpies no es bloquegin mai) |
+| Actualitzacions | `unattended-upgrades` activat |
+| Còpies rebudes | Usuari `backup` sense contrasenya, clau restringida a 192.168.56.30 (apartat 8) |
 
 ## 10. Alta disponibilitat
 

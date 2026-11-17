@@ -1,0 +1,11 @@
+# CSJ Parkings · blackbox_exporter (parking-mon)
+modules:
+  http_csj:
+    prober: http
+    timeout: 5s
+    http:
+      preferred_ip_protocol: ip4
+      valid_status_codes: [200]
+      fail_if_not_ssl: true
+      tls_config:
+        ca_file: /etc/prometheus/csj-ca.crt

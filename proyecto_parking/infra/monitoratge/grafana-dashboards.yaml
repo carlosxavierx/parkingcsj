@@ -1,0 +1,10 @@
+# CSJ Parkings · taulers de Grafana
+apiVersion: 1
+providers:
+  - name: csj-parkings
+    folder: CSJ Parkings
+    type: file
+    disableDeletion: true
+    allowUiUpdates: false
+    options:
+      path: /var/lib/grafana/dashboards
