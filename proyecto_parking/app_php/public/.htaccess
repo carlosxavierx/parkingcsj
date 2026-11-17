@@ -1,0 +1,16 @@
+# CSJ Parkings · totes les peticions que no siguin fitxers reals (css, js, img)
+# passen pel controlador frontal index.php
+Options -Indexes
+DirectoryIndex index.php
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^ index.php [QSA,L]
+</IfModule>
+
+# No servir mai fitxers ocults ni de configuració
+<FilesMatch "^\.|\.(ini|log|sql|md|sh)$">
+    Require all denied
+</FilesMatch>
