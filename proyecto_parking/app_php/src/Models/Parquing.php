@@ -32,6 +32,39 @@ final class Parquing
         return $files;
     }
 
+    /**
+     * Foto de l'entorn del pàrquing (si existeix el fitxer) amb el seu crèdit.
+     * @return array{url:string, lloc:string, credit:string, commons:string}|null
+     */
+    public static function foto(int $id): ?array
+    {
+        static $fotos = null;
+        $fotos ??= require APP_ROOT . '/src/fotos_parquings.php';
+        $fitxer = APP_ROOT . "/public/img/parquings/$id.jpg";
+        if (!isset($fotos[$id]) || !is_file($fitxer)) {
+            return null;
+        }
+        $f = $fotos[$id];
+        return [
+            'url'     => "/img/parquings/$id.jpg?v=" . filemtime($fitxer),
+            'lloc'    => $f['lloc'],
+            'credit'  => 'Foto: ' . $f['autor'] . ' · ' . $f['llicencia'],
+            'commons' => 'https://commons.wikimedia.org/wiki/File:' . rawurlencode(str_replace(' ', '_', $f['fitxer'])),
+        ];
+    }
+
+    /** Totes les fotos amb crèdit (per a la pàgina de condicions). */
+    public static function creditsFotos(): array
+    {
+        $res = [];
+        foreach ((require APP_ROOT . '/src/fotos_parquings.php') as $id => $f) {
+            if (is_file(APP_ROOT . "/public/img/parquings/$id.jpg")) {
+                $res[] = $f + ['commons' => 'https://commons.wikimedia.org/wiki/File:' . rawurlencode(str_replace(' ', '_', $f['fitxer']))];
+            }
+        }
+        return $res;
+    }
+
     public static function actius(): array
     {
         return DB::all('SELECT id_parquing, nom, adreca, horari FROM parquings WHERE actiu = 1 ORDER BY nom');

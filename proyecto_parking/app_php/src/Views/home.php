@@ -49,13 +49,24 @@ $ara->setTime((int) $ara->format('H'), 0);
 
     <div class="graella-parquings">
         <?php foreach ($parquings as $p):
-            $pct = $p['places_operatives'] ? round(100 * $p['lliures_ara'] / $p['places_operatives']) : 0; ?>
-            <article class="targeta targeta-parquing" data-text="<?= e(mb_strtolower($p['nom'] . ' ' . $p['adreca'])) ?>">
+            $pct = $p['places_operatives'] ? round(100 * $p['lliures_ara'] / $p['places_operatives']) : 0;
+            $foto = App\Models\Parquing::foto((int) $p['id_parquing']); ?>
+            <article class="targeta targeta-parquing" data-text="<?= e(mb_strtolower($p['nom'] . ' ' . $p['adreca'] . ' ' . ($foto['lloc'] ?? ''))) ?>">
+                <div class="tp-foto <?= $foto ? '' : 'sense-foto' ?>">
+                    <?php if ($foto): ?>
+                        <img src="<?= e($foto['url']) ?>" alt="<?= e($foto['lloc']) ?>, a prop de <?= e($p['nom']) ?>" loading="lazy" width="640" height="360">
+                        <span class="tp-lloc"><?= e($foto['lloc']) ?></span>
+                        <a class="tp-credit" href="<?= e($foto['commons']) ?>" target="_blank" rel="noopener"><?= e($foto['credit']) ?></a>
+                    <?php else: ?>
+                        <img src="/img/logo-mark.png" alt="" class="tp-logo">
+                    <?php endif; ?>
+                    <span class="etiqueta tp-tipus"><?= e(App\Models\Parquing::TIPUS[$p['tipus']] ?? $p['tipus']) ?></span>
+                </div>
+                <div class="tp-cos">
                 <div class="tp-cap">
                     <h3><?= e($p['nom']) ?></h3>
-                    <span class="etiqueta"><?= e(App\Models\Parquing::TIPUS[$p['tipus']] ?? $p['tipus']) ?></span>
                 </div>
-                <p class="adreca">📍 <?= e($p['adreca']) ?>, <?= e($p['codi_postal']) ?> · 🕒 <?= e($p['horari']) ?></p>
+                <p class="adreca"><?= e($p['adreca']) ?>, <?= e($p['codi_postal']) ?> · 🕒 <?= e($p['horari']) ?></p>
                 <div class="ocupacio">
                     <div class="barra"><span style="width: <?= (int) $pct ?>%" class="<?= $pct < 20 ? 'baix' : ($pct < 50 ? 'mig' : 'alt') ?>"></span></div>
                     <span><strong><?= (int) $p['lliures_ara'] ?></strong> / <?= (int) $p['places_operatives'] ?> places reservables lliures ara</span>
@@ -66,6 +77,7 @@ $ara->setTime((int) $ara->format('H'), 0);
                     </ul>
                 <?php endif; ?>
                 <a class="boto boto-secundari" href="/reserves/nova?parquing=<?= (int) $p['id_parquing'] ?>">Reservar aquí</a>
+                </div>
             </article>
         <?php endforeach; ?>
     </div>

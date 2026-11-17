@@ -33,5 +33,16 @@
         <li>De les targetes només es guarden els 4 últims dígits: mai el número complet ni el CVV.</li>
         <li>Pots consultar i modificar les teves dades des del teu perfil.</li>
     </ul>
+    <?php $credits = App\Models\Parquing::creditsFotos(); if ($credits): ?>
+        <h2 id="fotografies">5. Crèdits de les fotografies</h2>
+        <p>Les fotografies dels pàrquings són de <a href="https://commons.wikimedia.org" target="_blank" rel="noopener">Wikimedia Commons</a>
+            i es fan servir d'acord amb la seva llicència lliure.</p>
+        <ul>
+            <?php foreach ($credits as $c): ?>
+                <li><?= e($c['lloc']) ?>: <a href="<?= e($c['commons']) ?>" target="_blank" rel="noopener"><?= e($c['fitxer']) ?></a>
+                    — <?= e($c['autor']) ?>, <?= e($c['llicencia']) ?></li>
+            <?php endforeach; ?>
+        </ul>
+    <?php endif; ?>
     <p class="ajuda">Projecte acadèmic: els pagaments són simulats i no es fa cap càrrec real.</p>
 </article>
