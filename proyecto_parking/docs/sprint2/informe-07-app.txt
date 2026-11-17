@@ -1,0 +1,60 @@
+CSJ Parkings · desplegament de l'aplicació · 18/11/2026 00:18:17 · parking-srv
+
+=================== 1. Paquet php-fpdf ===================
+Package: php-fpdf
+Status: install ok installed
+Version: 3:1.8.2.dfsg-1
+$ ls -l /usr/share/php/fpdf/fpdf.php
+-rw-r--r-- 1 root root 49946 dic  7  2019 /usr/share/php/fpdf/fpdf.php
+
+=================== 2. Còpia de seguretat de la web actual ===================
+$ ls -lh /root/web-abans-app-20261118-001817.tgz
+-rw-r--r-- 1 root root 2,1M nov 18 00:18 /root/web-abans-app-20261118-001817.tgz
+
+=================== 3. Còpia del codi (sense tocar config.php ni storage) ===================
+$ ls -la /srv/www/csjparkings
+total 32
+drwxr-x--- 6 root     www-data 4096 nov 18 00:18 .
+drwxr-x--- 3 root     www-data 4096 nov 16 14:39 ..
+drwxr-x--- 2 root     www-data 4096 nov 17 23:50 config
+drwxr-xr-x 5 root     root     4096 nov 18 00:18 public
+-rw-r----- 1 root     www-data 5901 nov 18 00:18 README.md
+drwxr-xr-x 7 root     root     4096 nov 18 00:18 src
+drwxrwx--- 2 www-data www-data 4096 nov 16 14:39 storage
+
+=================== 4. Clau de xifratge app_key ===================
+app_key ja existeix: no es modifica (canviar-la faria illegibles les dades xifrades).
+Claus de config.php: db, app_key · db: host, name, user, pass, charset
+
+=================== 5. Permisos ===================
+$ ls -la /srv/www/csjparkings /srv/www/csjparkings/config
+/srv/www/csjparkings:
+total 32
+drwxr-x--- 6 root     www-data 4096 nov 18 00:18 .
+drwxr-x--- 3 root     www-data 4096 nov 16 14:39 ..
+drwxr-x--- 2 root     www-data 4096 nov 17 23:50 config
+drwxr-x--- 5 root     www-data 4096 nov 18 00:18 public
+-rw-r----- 1 root     www-data 5901 nov 18 00:18 README.md
+drwxr-x--- 7 root     www-data 4096 nov 18 00:18 src
+drwxrwx--- 2 www-data www-data 4096 nov 16 14:39 storage
+
+/srv/www/csjparkings/config:
+total 16
+drwxr-x--- 2 root www-data 4096 nov 17 23:50 .
+drwxr-x--- 6 root www-data 4096 nov 18 00:18 ..
+-rw-r----- 1 root www-data  794 nov 18 00:18 config.example.php
+-rw-r----- 1 root www-data  324 nov 17 23:50 config.php
+
+=================== 6. Comprovacions ===================
+Fitxers PHP: 59 · errors de sintaxi: 0
+$ apache2ctl configtest
+Syntax OK
+/              -> HTTP 200
+/login         -> HTTP 200
+/registre      -> HTTP 200
+/condicions    -> HTTP 200
+/reserves      -> HTTP 303
+/admin         -> HTTP 303
+
+Fet. Prova-ho a https://csjparkings.local/ (usuaris demo: admin@, operador@, client@csjparkings.cat).
+Informe desat a /home/carlos/informe-07-app.txt
