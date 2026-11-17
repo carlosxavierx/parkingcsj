@@ -19,8 +19,8 @@
         </label>
         <p class="ajuda" id="r-info-parquing"></p>
         <div class="fila-2">
-            <label>Entrada *<input type="datetime-local" name="entrada" id="r-entrada" value="<?= e($sel['entrada']) ?>" required></label>
-            <label>Sortida *<input type="datetime-local" name="sortida" id="r-sortida" value="<?= e($sel['sortida']) ?>" required></label>
+            <label>Entrada *<input type="datetime-local" name="entrada" id="r-entrada" value="<?= e($sel['entrada']) ?>" min="<?= e(date('Y-m-d\TH:i')) ?>" required></label>
+            <label>Sortida *<input type="datetime-local" name="sortida" id="r-sortida" value="<?= e($sel['sortida']) ?>" min="<?= e(date('Y-m-d\TH:i')) ?>" required></label>
         </div>
 
         <h2>2. Vehicle i pagament</h2>

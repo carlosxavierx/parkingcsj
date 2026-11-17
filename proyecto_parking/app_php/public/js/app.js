@@ -66,6 +66,39 @@ $$('select[data-rol]').forEach((sel) => sel.addEventListener('change', () => {
     p.required = sel.value === 'operador';
 }));
 
+// ---------- Dates d'entrada i sortida (tots els formularis que en tinguin) ----------
+//  - L'entrada no pot ser anterior a ara (atribut min, posat també pel servidor).
+//  - La sortida no pot ser anterior a l'entrada: el seu min segueix l'entrada i,
+//    si l'usuari tria una entrada posterior a la sortida, la sortida es mou 2 hores després.
+//  El servidor torna a validar-ho tot (ReservaController::crear).
+const pad = (n) => String(n).padStart(2, '0');
+const aInput = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+$$('form').forEach((form) => {
+    const inEntrada = $('input[type=datetime-local][name=entrada]', form);
+    const inSortida = $('input[type=datetime-local][name=sortida]', form);
+    if (!inEntrada || !inSortida) return;
+    const nomesFutur = inEntrada.hasAttribute('min');   // el formulari d'administració no limita el passat
+
+    const validar = () => {
+        const e = new Date(inEntrada.value), s = new Date(inSortida.value);
+        if (!isNaN(e)) inSortida.min = inEntrada.value;
+        inEntrada.setCustomValidity(nomesFutur && !isNaN(e) && e < new Date(Date.now() - 300000)
+            ? 'L\'entrada ha de ser avui o més endavant (no pot ser en el passat).' : '');
+        inSortida.setCustomValidity(!isNaN(e) && !isNaN(s) && s <= e
+            ? 'La sortida ha de ser posterior a l\'entrada.' : '');
+    };
+    inEntrada.addEventListener('change', () => {
+        const e = new Date(inEntrada.value), s = new Date(inSortida.value);
+        if (!isNaN(e) && (isNaN(s) || s <= e)) inSortida.value = aInput(new Date(e.getTime() + 2 * 3600000));
+        validar();
+    });
+    ['input', 'change'].forEach((ev) => {
+        inEntrada.addEventListener(ev, validar);
+        inSortida.addEventListener(ev, validar);
+    });
+    validar();
+});
+
 // ---------- Mapa dels pàrquings (Leaflet + OpenStreetMap) ----------
 const mapa = $('#mapa');
 if (mapa && window.L) {
@@ -176,15 +209,7 @@ if (formReserva) {
         }, 350);
     };
 
-    // La sortida mai anterior a l'entrada: si cal, es mou 2 hores després
-    inEntrada.addEventListener('change', () => {
-        const e = new Date(inEntrada.value), s = new Date(inSortida.value);
-        if (!isNaN(e) && (isNaN(s) || s <= e)) {
-            const nova = new Date(e.getTime() + 2 * 3600000);
-            const pad = (n) => String(n).padStart(2, '0');
-            inSortida.value = `${nova.getFullYear()}-${pad(nova.getMonth() + 1)}-${pad(nova.getDate())}T${pad(nova.getHours())}:${pad(nova.getMinutes())}`;
-        }
-    });
+    // (la coherència entrada/sortida la gestiona el bloc genèric "Dates d'entrada i sortida")
     [selParquing, inEntrada, inSortida].forEach((el) => el.addEventListener('change', actualitzar));
     inEntrada.addEventListener('input', actualitzar);
     inSortida.addEventListener('input', actualitzar);

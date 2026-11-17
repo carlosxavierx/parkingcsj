@@ -21,8 +21,8 @@ $ara->setTime((int) $ara->format('H'), 0);
             </select>
         </label>
         <div class="fila-2">
-            <label>Entrada <input type="datetime-local" name="entrada" value="<?= e($ara->format('Y-m-d\TH:i')) ?>" required></label>
-            <label>Sortida <input type="datetime-local" name="sortida" value="<?= e((clone $ara)->modify('+2 hours')->format('Y-m-d\TH:i')) ?>" required></label>
+            <label>Entrada <input type="datetime-local" name="entrada" value="<?= e($ara->format('Y-m-d\TH:i')) ?>" min="<?= e(date('Y-m-d\TH:i')) ?>" required></label>
+            <label>Sortida <input type="datetime-local" name="sortida" value="<?= e((clone $ara)->modify('+2 hours')->format('Y-m-d\TH:i')) ?>" min="<?= e(date('Y-m-d\TH:i')) ?>" required></label>
         </div>
         <button class="boto boto-gran" type="submit">Continuar amb la reserva →</button>
         <?php if (!usuari()): ?><p class="ajuda">Cal tenir un compte per reservar. <a href="/registre">Registra't</a> en un minut.</p><?php endif; ?>

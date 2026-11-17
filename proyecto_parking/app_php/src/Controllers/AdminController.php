@@ -97,8 +97,12 @@ final class AdminController extends Controller
         if (in_array($r['estat'], ['completada', 'cancellada'], true)) {
             $errors[] = 'No es pot modificar una reserva completada o cancel·lada.';
         }
-        if (!$entrada || !$sortida || strtotime($sortida) - strtotime($entrada) < 1800) {
-            $errors[] = 'Les dates no són vàlides (mínim 30 minuts).';
+        if (!$entrada || !$sortida) {
+            $errors[] = 'Indica la data i l\'hora d\'entrada i de sortida.';
+        } elseif ($sortida <= $entrada) {
+            $errors[] = 'La sortida ha de ser posterior a l\'entrada.';
+        } elseif (strtotime($sortida) - strtotime($entrada) < 1800) {
+            $errors[] = 'La reserva ha de durar com a mínim 30 minuts.';
         }
         $this->tornarSiErrors($errors, "/admin/reserves/$id");
         try {

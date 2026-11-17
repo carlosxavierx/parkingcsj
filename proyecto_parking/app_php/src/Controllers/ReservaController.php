@@ -90,9 +90,11 @@ final class ReservaController extends Controller
         } else {
             $minuts = (strtotime($sortida) - strtotime($entrada)) / 60;
             if (strtotime($entrada) < time() - 300) {
-                $errors[] = 'L\'hora d\'entrada no pot ser anterior a ara.';
+                $errors[] = 'L\'entrada ha de ser avui o més endavant (no pot ser en el passat).';
             }
-            if ($minuts < CalculPreu::MINUTS_MINIMS) {
+            if ($sortida <= $entrada) {
+                $errors[] = 'La sortida ha de ser posterior a l\'entrada.';
+            } elseif ($minuts < CalculPreu::MINUTS_MINIMS) {
                 $errors[] = 'La reserva ha de durar com a mínim ' . CalculPreu::MINUTS_MINIMS . ' minuts.';
             }
             if ($minuts > CalculPreu::DIES_MAXIMS * 1440) {
