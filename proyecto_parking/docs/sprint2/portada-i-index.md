@@ -18,9 +18,9 @@
 
 | Integrant | Rol al projecte |
 |---|---|
-| **Carlos** | Coordinació i infraestructura |
-| **Sara** | Aplicació i base de dades |
-| **Joel** | Dades, proves i suport documental |
+| **Carlos Xavier** | Coordinació i infraestructura |
+| **Sara Pulido** | Aplicació i base de dades |
+| **Joel Zurita** | Dades, proves i suport documental |
 
 <br>
 

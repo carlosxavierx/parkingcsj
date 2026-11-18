@@ -2,7 +2,7 @@
 
 ## Sistema de Reserves de Places de Pàrquing · CSJ Parkings (Tarragona)
 
-**Equip:** Carlos, Sara i Joel · **Lliurament:** dissabte 21/11/2026
+**Equip:** Carlos Xavier, Sara Pulido i Joel Zurita · **Lliurament:** dissabte 21/11/2026
 
 | Fitxer | Contingut |
 |---|---|
@@ -19,8 +19,8 @@
 ## Lliurables del Sprint 2 (Moodle)
 
 - [ ] Presentació + document de presentació
-- [ ] Documentació tècnica (tecnologies utilitzades i codi), amb portada, índex, captures i bibliografia
-- [ ] Planificació actualitzada
-- [ ] Manual d'usuari
-- [ ] Model E/R actualitzat
-- [ ] Enllaç o IP per provar l'aplicació
+- [x] Documentació tècnica (tecnologies utilitzades i codi), amb portada, índex, captures i bibliografia
+- [x] Planificació actualitzada
+- [x] Manual d'usuari
+- [x] Model E/R actualitzat
+- [x] Enllaç o IP per provar l'aplicació
