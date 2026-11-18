@@ -12,6 +12,7 @@
 | `03-planificacio-actualitzada.md` | Planificació actualitzada, repartiment de tasques i Gantt |
 | `04-model-er-actualitzat.md` | Model E/R actualitzat, rols i permisos (scripts a `../../database/`) |
 | `05-manual-usuari.md` | *(pendent)* Manual d'usuari |
+| `06-documentacio-codi.md` | Documentació tècnica del codi: tecnologies, arquitectura MVC, seguretat i lògica de negoci |
 
 ## Lliurables del Sprint 2 (Moodle)
 
