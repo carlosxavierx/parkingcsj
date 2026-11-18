@@ -108,10 +108,20 @@ Diapositives: <code>CSJ-Parkings-Sprint2-diapositives.pdf</code> (16 diapositive
 
 <h2 class="salt">3. Demostració pas a pas</h2>
 
-<div class="avis"><b>Abans de començar:</b> cada usuari necessita una sessió separada. El navegador guarda la sessió per adreça, així que:
-<b>client</b> a <code>https://csjparkings.local</code> (finestra normal), <b>operador</b> a <code>https://192.168.56.30</code> (finestra normal) i
-<b>administrador</b> a <code>https://csjparkings.local</code> en una <b>finestra d'incògnit</b>. Les sessions caduquen als 30 minuts sense activitat:
-iniciar-les just abans de presentar.</div>
+<div class="avis"><b>Abans de començar:</b> cada usuari necessita una sessió separada. Chrome guarda una sola galeta de sessió per adreça,
+així que fem servir <b>tres perfils de Chrome</b>, cadascun amb les seves galetes i el seu color. Tots tres obren la mateixa adreça
+<code>https://csjparkings.local</code> sense barrejar-se.</div>
+
+<table>
+  <tr><th>Perfil de Chrome</th><th>Color</th><th>Usuari</th><th>Qui el fa servir</th></tr>
+  <tr><td><b>Client</b></td><td>blau</td><td><code>client@csjparkings.cat</code></td><td>Sara</td></tr>
+  <tr><td><b>Operador</b></td><td>taronja</td><td><code>operador@csjparkings.cat</code></td><td>Carlos</td></tr>
+  <tr><td><b>Admin</b></td><td>vermell</td><td><code>admin@csjparkings.cat</code></td><td>Joel</td></tr>
+</table>
+
+<div class="avis"><b>Abans de cada pas</b>, mirar la cantonada superior dreta de la web: hi surt el nom i el rol de l'usuari amb sessió iniciada.
+Si no és el que toca, canviar de finestra. Les sessions caduquen als <b>30 minuts sense activitat</b>: iniciar-les just abans de presentar
+i, si la demo arriba tard, recarregar les tres finestres una mica abans.</div>
 
 <h3>Pas 1 · Client (Sara) — 1,5 min</h3>
 <ol>
@@ -141,9 +151,9 @@ iniciar-les just abans de presentar.</div>
 <table>
   <tr><th>Quan</th><th>Què</th></tr>
   <tr><td>Dia abans</td><td>Assajar amb cronòmetre (objectiu: 15 min). Copiar el PDF de les diapositives a un USB i al correu.</td></tr>
-  <tr><td>Dia abans</td><td>La reserva de proves <b>CSJ-20261118-E7NQR8</b> (1234ABC) consta «en curs»: fer-ne la <b>sortida</b> al lector amb l'hora simulada <code>18/11/2026 20:00</code> perquè quedi completada.</td></tr>
+  <tr><td>Dia abans</td><td>Crear els <b>tres perfils de Chrome</b> (icona del perfil, a dalt a la dreta → <i>Afegeix</i>): <b>Client</b> (blau), <b>Operador</b> (taronja) i <b>Admin</b> (vermell). A cada perfil, desar <code>https://csjparkings.local</code> com a pàgina d'inici. Assajar la demo amb aquests perfils.</td></tr>
   <tr><td>Abans de començar</td><td>Engegar les dues VM sense interfície i comprovar <code>ping 192.168.56.30</code> i <code>.31</code>.</td></tr>
-  <tr><td>Abans de començar</td><td>Obrir <code>https://csjparkings.local</code> i iniciar les 3 sessions. Tenir Grafana obert per si pregunten pel monitoratge (<code>http://192.168.56.31:3000</code>).</td></tr>
+  <tr><td>Abans de començar</td><td>Obrir els 3 perfils de Chrome i iniciar sessió a cadascun amb el seu usuari (comprovar el nom a dalt a la dreta). Tenir Grafana obert per si pregunten pel monitoratge (<code>http://192.168.56.31:3000</code>).</td></tr>
   <tr><td>Abans de començar</td><td>Obrir el PDF de les diapositives en pantalla completa (<code>Ctrl + L</code> a Adobe / <code>F11</code> a Chrome).</td></tr>
 </table>
 
