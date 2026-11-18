@@ -15,10 +15,11 @@
 | `05-manual-usuari.md` | Manual d'usuari (client, operador i administrador) |
 | `06-documentacio-codi.md` | Documentació tècnica del codi: tecnologies, arquitectura MVC, seguretat i lògica de negoci |
 | `07-bibliografia.md` | Bibliografia i crèdits de les fotografies |
+| `presentacio/` | Diapositives (`CSJ-Parkings-Sprint2-diapositives.pdf`) i guió (`CSJ-Parkings-Sprint2-guio.pdf`), amb els fitxers HTML d'origen |
 
 ## Lliurables del Sprint 2 (Moodle)
 
-- [ ] Presentació + document de presentació
+- [x] Presentació + document de presentació (pendent d'assajar)
 - [x] Documentació tècnica (tecnologies utilitzades i codi), amb portada, índex, captures i bibliografia
 - [x] Planificació actualitzada
 - [x] Manual d'usuari

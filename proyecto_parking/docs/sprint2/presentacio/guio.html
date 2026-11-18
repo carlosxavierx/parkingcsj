@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="ca">
+<head>
+<meta charset="utf-8">
+<title>CSJ Parkings · Guió de la presentació (Sprint 2)</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&display=swap">
+<style>
+@page { size: A4; margin: 18mm 16mm 18mm; }
+:root { --fosc: #15171c; --groc: #ffc400; --taronja: #ff7a1a; --suau: #6b6f7a; --vora: #e2e3e8; --fons: #f5f5f7; }
+* { box-sizing: border-box; }
+body { font-family: Montserrat, "Segoe UI", Arial, sans-serif; color: #1d1f24; font-size: 10.5pt; line-height: 1.5; margin: 0;
+       -webkit-print-color-adjust: exact; print-color-adjust: exact; max-width: 820px; margin: 0 auto; }
+.portada { background: var(--fosc); color: #fff; border-radius: 10px; padding: 26px 30px; margin-bottom: 22px; border-bottom: 6px solid var(--taronja); }
+.portada img { width: 300px; }
+.portada h1 { margin: 16px 0 4px; font-size: 22pt; }
+.portada p { margin: 2px 0; color: #c3c6cf; }
+h2 { font-size: 15pt; margin: 26px 0 8px; padding-bottom: 4px; border-bottom: 3px solid var(--taronja); page-break-after: avoid; }
+h3 { font-size: 11.5pt; margin: 16px 0 4px; page-break-after: avoid; }
+table { border-collapse: collapse; width: 100%; margin: 8px 0 12px; font-size: 9.5pt; page-break-inside: avoid; }
+th { background: var(--fosc); color: #fff; text-align: left; padding: 6px 8px; font-size: 9pt; }
+td { padding: 6px 8px; border-bottom: 1px solid var(--vora); vertical-align: top; }
+.diapo { border: 1px solid var(--vora); border-left: 5px solid var(--taronja); border-radius: 8px; padding: 10px 14px; margin: 10px 0; page-break-inside: avoid; }
+.diapo .cap { display: flex; justify-content: space-between; font-weight: 700; margin-bottom: 4px; }
+.qui { background: var(--fosc); color: var(--groc); border-radius: 999px; padding: 1px 10px; font-size: 9pt; }
+.diapo p { margin: 4px 0; }
+.diapo .clau { color: var(--suau); font-size: 9.5pt; }
+code { background: #eceef2; padding: 1px 5px; border-radius: 4px; font-size: 9pt; }
+ol li, ul li { margin-bottom: 4px; }
+.avis { background: #fff8e1; border-left: 4px solid var(--groc); padding: 8px 12px; border-radius: 6px; margin: 10px 0; }
+.salt { page-break-before: always; }
+</style>
+</head>
+<body>
+
+<div class="portada">
+  <img src="../../../app_php/public/img/logo-horizontal.png" alt="CSJ Parkings">
+  <h1>Guió de la presentació · Sprint 2</h1>
+  <p>Sistema de reserves de places als pàrquings municipals de Tarragona</p>
+  <p>Carlos Xavier · Sara Pulido · Joel Zurita — 21 de novembre de 2026</p>
+</div>
+
+<h2>1. Organització</h2>
+<p>Durada prevista: <b>15 minuts</b> (11 de diapositives + 4 de demostració) i després preguntes.
+Diapositives: <code>CSJ-Parkings-Sprint2-diapositives.pdf</code> (16 diapositives).</p>
+
+<table>
+  <tr><th>Part</th><th>Diapositives</th><th>Qui</th><th>Temps</th></tr>
+  <tr><td>Introducció i infraestructura</td><td>1–5</td><td>Carlos</td><td>4 min</td></tr>
+  <tr><td>Base de dades i aplicació</td><td>6–9, 11</td><td>Sara</td><td>4 min</td></tr>
+  <tr><td>Lector de matrícules</td><td>10</td><td>Carlos</td><td>1 min</td></tr>
+  <tr><td>Proves i planificació</td><td>12–13</td><td>Joel</td><td>2 min</td></tr>
+  <tr><td>Demostració en directe</td><td>14</td><td>Sara → Carlos → Joel</td><td>4 min</td></tr>
+  <tr><td>Conclusions i preguntes</td><td>15–16</td><td>Joel</td><td>1 min + preguntes</td></tr>
+</table>
+
+<h2>2. Què diu cada persona</h2>
+
+<div class="diapo"><div class="cap"><span>1 · Portada</span><span class="qui">Carlos · 30 s</span></div>
+<p>«Bon dia. Som en Carlos, la Sara i en Joel, i us presentem <b>CSJ Parkings</b>, un sistema per reservar plaça als pàrquings municipals de Tarragona. En aquest Sprint 2 hem passat del disseny a una aplicació que funciona en servidors reals.»</p></div>
+
+<div class="diapo"><div class="cap"><span>2 · Què hem fet</span><span class="qui">Carlos · 40 s</span></div>
+<p>«En xifres: dos servidors virtuals, els 14 pàrquings reals de Tarragona amb 323 places, tres rols d'usuari i 18 proves superades. La feina té tres blocs: infraestructura, aplicació i documentació.»</p></div>
+
+<div class="diapo"><div class="cap"><span>3 · Arquitectura</span><span class="qui">Carlos · 1 min</span></div>
+<p>«Tenim dos servidors. <b>parking-srv</b> té la web, PHP i MariaDB sobre un RAID 1. <b>parking-mon</b> és un servidor a part que vigila el primer i guarda les còpies. Els hem separat perquè, si cau el servidor web, el de monitoratge ho detecta i les còpies no es perden.»</p>
+<p class="clau">Per què 1,5 GB i 1 GB de RAM: el portàtil té 8 GB i les dues màquines han de funcionar alhora.</p></div>
+
+<div class="diapo"><div class="cap"><span>4 · RAID 1 i HTTPS</span><span class="qui">Carlos · 1 min</span></div>
+<p>«El RAID 1 són dos discos en mirall. Ho hem provat: vam fer fallar un disc, el servidor va continuar funcionant, el vam substituir i es va reconstruir sol.»</p>
+<p>«Per a l'HTTPS no podem fer servir Let's Encrypt perquè és una xarxa privada sense domini públic. Per això hem creat la nostra pròpia autoritat de certificació i l'hem instal·lat al Windows.»</p></div>
+
+<div class="diapo"><div class="cap"><span>5 · Seguretat, còpies i monitoratge</span><span class="qui">Carlos · 1 min</span></div>
+<p>«Seguretat en capes: tallafocs que ho bloqueja tot menys el necessari, fail2ban contra atacs de força bruta, SSH només amb clau i, molt important, l'usuari de base de dades de la web <b>no té permís per esborrar</b>.»</p>
+<p>«Còpies: una completa cada setmana i una incremental cada dia amb els <i>binary logs</i>, enviades a l'altre servidor. Hem provat la restauració. I a Grafana veiem l'estat de tot, amb 7 alertes.»</p></div>
+
+<div class="diapo"><div class="cap"><span>6 · Model de dades</span><span class="qui">Sara · 1 min</span></div>
+<p>«Hem corregit el model del Sprint 1. Ara els usuaris tenen un <b>rol</b>, cada usuari té els seus vehicles i mètodes de pagament, i els pagaments són 1 a N perquè l'excés de temps és un segon pagament de la mateixa reserva.»</p>
+<p>«La decisió més important: <b>les reserves no s'esborren mai</b>, només es cancel·len, i cada canvi queda registrat a l'historial.»</p></div>
+
+<div class="diapo"><div class="cap"><span>7 · Aplicació i seguretat</span><span class="qui">Sara · 1 min</span></div>
+<p>«L'aplicació és PHP sense framework, amb el patró Model-Vista-Controlador. Totes les peticions entren per un sol fitxer i un enrutador decideix què s'executa.»</p>
+<p>«A la dreta hi ha la seguretat: consultes preparades contra la injecció SQL, escapament contra el XSS, un token als formularis contra el CSRF, contrasenyes amb bcrypt i bloqueig després de 5 intents, i el telèfon i el DNI xifrats amb AES-256.»</p></div>
+
+<div class="diapo"><div class="cap"><span>8 · Reserva i preu</span><span class="qui">Sara · 1 min</span></div>
+<p>«El preu es calcula amb les tarifes de la base de dades: 1,90 € les dues primeres hores, 0,20 € a partir de la tercera, tarifa nocturna i un màxim de 4 € per dia, més el 10 % de gestió. Per exemple, de 10 a 13 h són 4,40 €.»</p>
+<p>«El navegador mostra el preu a l'instant, però el preu que es guarda el calcula <b>sempre el servidor</b>, perquè el del navegador es podria manipular.»</p></div>
+
+<div class="diapo"><div class="cap"><span>9 · Número de reserva i PDF</span><span class="qui">Sara · 40 s</span></div>
+<p>«Cada reserva té un número únic amb la data i 6 caràcters aleatoris, i un justificant en PDF amb codi de barres. Només el poden veure el titular, l'operador del pàrquing i l'administrador.»</p></div>
+
+<div class="diapo"><div class="cap"><span>10 · Lector de matrícules</span><span class="qui">Carlos · 1 min</span></div>
+<p>«L'operador té un simulador de la càmera de la barrera. A l'entrada, si hi ha una reserva vigent, s'obre la barrera. Si arriba massa d'hora o el pàrquing és ple, no. A la sortida, si surt tard, es cobra l'excés <b>amb el mateix mètode de pagament</b>, tal com demana l'enunciat. Ho veureu a la demo.»</p></div>
+
+<div class="diapo"><div class="cap"><span>11 · Administració</span><span class="qui">Sara · 40 s</span></div>
+<p>«L'administrador gestiona pàrquings, places, tarifes i usuaris, i veu totes les reserves amb una cerca avançada. Pot canviar l'estat o modificar una reserva, i el preu es recalcula. "Cancel·lar" és un esborrat lògic: la reserva continua a la base de dades.»</p></div>
+
+<div class="diapo"><div class="cap"><span>12 · Proves</span><span class="qui">Joel · 1 min</span></div>
+<p>«He fet 18 proves: les de funcionament i, sobretot, les del que <b>no</b> s'ha de poder fer. Per exemple, un client no pot entrar a l'administració, no pot veure la reserva d'un altre, i després de cinc contrasenyes errònies el compte es bloqueja. Totes han passat.»</p></div>
+
+<div class="diapo"><div class="cap"><span>13 · Planificació</span><span class="qui">Joel · 1 min</span></div>
+<p>«Les barres de colors són el que hem fet de veritat, i la ratllada era el previst. L'aplicació es va acabar dos dies abans del previst, i això ens va deixar temps per a les proves, el manual i la documentació.»</p></div>
+
+<div class="diapo"><div class="cap"><span>14 · Demostració</span><span class="qui">Tots · 4 min</span></div>
+<p>Vegeu l'apartat 3.</p></div>
+
+<div class="diapo"><div class="cap"><span>15–16 · Conclusions</span><span class="qui">Joel · 1 min</span></div>
+<p>«En resum, tot el que és obligatori del Sprint 2 està fet i provat. Com a millores: un segon servidor amb balanceig de càrrega a l'equip de l'institut, una passarel·la de pagament real i una càmera real. Moltes gràcies, teniu alguna pregunta?»</p></div>
+
+<h2 class="salt">3. Demostració pas a pas</h2>
+
+<div class="avis"><b>Abans de començar:</b> cada usuari necessita una sessió separada. El navegador guarda la sessió per adreça, així que:
+<b>client</b> a <code>https://csjparkings.local</code> (finestra normal), <b>operador</b> a <code>https://192.168.56.30</code> (finestra normal) i
+<b>administrador</b> a <code>https://csjparkings.local</code> en una <b>finestra d'incògnit</b>. Les sessions caduquen als 30 minuts sense activitat:
+iniciar-les just abans de presentar.</div>
+
+<h3>Pas 1 · Client (Sara) — 1,5 min</h3>
+<ol>
+  <li>Pàgina d'inici: ensenyar les tarifes, les targetes amb places lliures i el mapa.</li>
+  <li><b>Reservar</b> → pàrquing <b>Plaça de la Font</b>, entrada <b>ara</b>, sortida <b>d'aquí a 2 hores</b>. Ensenyar com canvien les places lliures i el preu.</li>
+  <li>Triar el vehicle <b>5678DEF</b> (Tesla), acceptar les condicions → <b>Confirmar i pagar</b>.</li>
+  <li>Ensenyar el número de reserva i obrir el <b>PDF</b>.</li>
+</ol>
+
+<h3>Pas 2 · Operador (Carlos) — 1,5 min</h3>
+<ol>
+  <li>Panell de l'operador: ensenyar les 4 xifres d'ocupació.</li>
+  <li>Matrícula <code>5678DEF</code> → <b>Barrera d'entrada</b> → «Barrera oberta» amb el número de reserva i la plaça.</li>
+  <li>Obrir <b>Simular una altra hora</b> i posar <b>1 hora després de la sortida prevista</b> → <code>5678DEF</code> → <b>Barrera de sortida</b> → es mostra l'excés cobrat.</li>
+  <li>Ensenyar la taula <b>Últims accessos</b>.</li>
+</ol>
+
+<h3>Pas 3 · Administrador (Joel) — 1 min</h3>
+<ol>
+  <li><b>Administració → Reserves</b> → cercar per matrícula <code>5678DEF</code>.</li>
+  <li>Obrir la reserva: estat <b>Completada</b>, pagaments (<b>Reserva</b> + <b>Excés</b>) i l'<b>historial</b> amb tots els canvis.</li>
+</ol>
+
+<div class="avis"><b>Si la demo falla</b> (xarxa, servidor, sessió…): no perdre temps. Tornar a les diapositives 8–11, que tenen captures de les mateixes pantalles, i explicar-ho sobre les captures.</div>
+
+<h2>4. Preparació (el dia abans i abans de començar)</h2>
+<table>
+  <tr><th>Quan</th><th>Què</th></tr>
+  <tr><td>Dia abans</td><td>Assajar amb cronòmetre (objectiu: 15 min). Copiar el PDF de les diapositives a un USB i al correu.</td></tr>
+  <tr><td>Dia abans</td><td>La reserva de proves <b>CSJ-20261118-E7NQR8</b> (1234ABC) consta «en curs»: fer-ne la <b>sortida</b> al lector amb l'hora simulada <code>18/11/2026 20:00</code> perquè quedi completada.</td></tr>
+  <tr><td>Abans de començar</td><td>Engegar les dues VM sense interfície i comprovar <code>ping 192.168.56.30</code> i <code>.31</code>.</td></tr>
+  <tr><td>Abans de començar</td><td>Obrir <code>https://csjparkings.local</code> i iniciar les 3 sessions. Tenir Grafana obert per si pregunten pel monitoratge (<code>http://192.168.56.31:3000</code>).</td></tr>
+  <tr><td>Abans de començar</td><td>Obrir el PDF de les diapositives en pantalla completa (<code>Ctrl + L</code> a Adobe / <code>F11</code> a Chrome).</td></tr>
+</table>
+
+<h2>5. Possibles preguntes</h2>
+<table>
+  <tr><th style="width:36%">Pregunta</th><th>Resposta</th><th style="width:10%">Qui</th></tr>
+  <tr><td>Per què no es poden eliminar les reserves?</td><td>Ho diu l'enunciat i és necessari per a la comptabilitat i l'historial. Cancel·lar és un esborrat lògic; l'usuari de BD de la web ni tan sols té permís <code>DELETE</code>.</td><td>Sara</td></tr>
+  <tr><td>Per què RAID 1 i no RAID 5?</td><td>RAID 5 necessita 3 discos com a mínim. Amb 2 discos, el RAID 1 dona redundància completa i és el més senzill de reconstruir.</td><td>Carlos</td></tr>
+  <tr><td>Per què una CA pròpia i no Let's Encrypt?</td><td>Let's Encrypt necessita un domini públic accessible des d'internet. En una xarxa privada la solució és una CA pròpia instal·lada als equips.</td><td>Carlos</td></tr>
+  <tr><td>Com es restaura una còpia?</td><td>Es restaura la completa més recent i després s'apliquen els <i>binary logs</i> des de la posició anotada. Ho hem provat i està documentat.</td><td>Carlos</td></tr>
+  <tr><td>Per què PHP sense framework?</td><td>Per entendre i poder defensar tot el codi. És petit (≈ 3.000 línies de PHP) i segueix el patró MVC.</td><td>Sara</td></tr>
+  <tr><td>Què passa si dues persones reserven l'última plaça alhora?</td><td>La reserva es fa en una transacció que bloqueja el pàrquing (<code>SELECT … FOR UPDATE</code>): la segona espera i ja no troba plaça.</td><td>Sara</td></tr>
+  <tr><td>Com guardeu les targetes?</td><td>Només els 4 últims dígits i un token. Mai el número complet ni el CVV. El número es valida amb l'algorisme de Luhn. El pagament és simulat.</td><td>Sara</td></tr>
+  <tr><td>Com sabeu que les dades estan xifrades?</td><td>Ho hem comprovat consultant la BD: el telèfon i el DNI només hi són en base64 xifrat (prova 18). La clau és fora de la BD.</td><td>Joel</td></tr>
+  <tr><td>Com s'ha calculat l'excés?</td><td>Preu de tota l'estada real menys el que ja s'havia pagat, amb les mateixes tarifes i el màxim diari. Hi ha 5 minuts de cortesia.</td><td>Carlos</td></tr>
+  <tr><td>Hi ha balanceig de càrrega?</td><td>És opcional. Amb 8 GB al portàtil no hi caben més màquines; està previst a l'equip de l'institut amb un segon servidor web i HAProxy.</td><td>Carlos</td></tr>
+</table>
+
+</body>
+</html>

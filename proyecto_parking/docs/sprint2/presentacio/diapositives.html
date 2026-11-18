@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="ca">
+<head>
+<meta charset="utf-8">
+<title>CSJ Parkings · Sprint 2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&display=swap">
+<style>
+:root {
+  --fosc: #15171c; --fosc-2: #23262e; --groc: #ffc400; --taronja: #ff7a1a;
+  --degradat: linear-gradient(120deg, #ffc400, #ff7a1a);
+  --fons: #f5f5f7; --text: #1d1f24; --suau: #6b6f7a; --vora: #e2e3e8;
+  --ok: #2e7d32; --ok-fons: #e8f5e9;
+}
+@page { size: 1280px 720px; margin: 0; }
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: #888; }
+body { font-family: Montserrat, "Segoe UI", Arial, sans-serif; color: var(--text);
+       -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.slide { width: 1280px; height: 720px; position: relative; overflow: hidden; background: var(--fons);
+         padding: 56px 72px 64px; display: flex; flex-direction: column; margin: 0 auto 24px;
+         page-break-after: always; break-after: page; }
+@media print { body { background: none; } .slide { margin: 0; } }
+.slide.fosca { background: var(--fosc); color: #fff; }
+.slide::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 6px; background: var(--degradat); }
+.peu { position: absolute; left: 72px; right: 72px; bottom: 20px; display: flex; justify-content: space-between;
+       font-size: 13px; color: var(--suau); }
+.fosca .peu { color: #9a9ea8; }
+.qui { position: absolute; top: 24px; right: 72px; font-size: 13px; font-weight: 700; padding: 5px 12px;
+       border-radius: 999px; background: var(--fosc); color: var(--groc); }
+.fosca .qui { background: var(--fosc-2); }
+h1 { font-size: 46px; line-height: 1.1; margin: 0 0 14px; font-weight: 800; }
+h2 { font-size: 36px; margin: 0 0 6px; font-weight: 800; }
+.sub { font-size: 20px; color: var(--suau); margin: 0 0 26px; }
+.fosca .sub { color: #c3c6cf; }
+.ressalt { background: var(--degradat); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.cos { flex: 1; display: grid; gap: 22px; min-height: 0; }
+.c2 { grid-template-columns: 1fr 1fr; }
+.c3 { grid-template-columns: repeat(3, 1fr); }
+.c4 { grid-template-columns: repeat(4, 1fr); }
+.c-55-45 { grid-template-columns: 1.15fr .85fr; }
+.c-40-60 { grid-template-columns: .8fr 1.2fr; }
+.targeta { background: #fff; border-radius: 14px; padding: 20px 22px; box-shadow: 0 1px 2px rgba(0,0,0,.05), 0 4px 16px rgba(0,0,0,.06);
+           border-top: 4px solid var(--taronja); }
+.fosca .targeta { background: var(--fosc-2); color: #fff; box-shadow: none; }
+.targeta h3 { margin: 0 0 10px; font-size: 23px; }
+.targeta p, .targeta li { font-size: 19px; line-height: 1.45; margin: 0 0 4px; }
+ul { margin: 0; padding-left: 20px; }
+li { font-size: 20px; line-height: 1.45; margin-bottom: 8px; }
+li::marker { color: var(--taronja); }
+.xifra { font-size: 44px; font-weight: 800; line-height: 1; margin-bottom: 6px; }
+.xifra small { font-size: 18px; font-weight: 600; }
+img.capt { display: block; max-width: 100%; max-height: 430px; width: auto; height: auto; margin: 0 auto; border-radius: 10px;
+           box-shadow: 0 4px 18px rgba(0,0,0,.15); }
+.marc { min-height: 0; display: flex; flex-direction: column; gap: 6px; }
+.marc img { min-height: 0; }
+.marc .img { flex: none; min-height: 0; display: flex; align-items: flex-start; justify-content: center; }
+.peu-img { font-size: 15px; color: var(--suau); text-align: center; }
+table { border-collapse: collapse; width: 100%; font-size: 18px; }
+th { text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--suau); padding: 7px 8px; border-bottom: 2px solid var(--vora); }
+td { padding: 9px 8px; border-bottom: 1px solid var(--vora); vertical-align: top; }
+.ok { color: var(--ok); font-weight: 700; white-space: nowrap; text-align: right; }
+.etiqueta { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 13px; font-weight: 700; background: var(--ok-fons); color: var(--ok); }
+code, .mono { font-family: Consolas, "Courier New", monospace; }
+code { background: #eceef2; padding: 1px 6px; border-radius: 5px; font-size: .92em; }
+.fosca code { background: #2e323c; color: var(--groc); }
+.matricula { font-family: Consolas, monospace; font-weight: 700; border: 2px solid var(--fosc); border-left: 8px solid #1e4fd6; border-radius: 5px; padding: 1px 8px; background: #fff; color: var(--fosc); }
+
+/* Portada */
+.portada { justify-content: center; }
+.portada .logo { width: 560px; margin-bottom: 40px; }
+.portada h1 { font-size: 54px; }
+.equip { display: flex; gap: 18px; margin-top: 36px; }
+.equip div { background: var(--fosc-2); border-radius: 12px; padding: 14px 20px; border-left: 4px solid var(--groc); }
+.equip strong { display: block; font-size: 18px; }
+.equip span { font-size: 14px; color: #c3c6cf; }
+
+/* Arquitectura */
+.arq { display: grid; grid-template-columns: .9fr 120px 1.2fr 120px 1.1fr; gap: 12px; align-items: center; flex: 1; }
+.caixa { background: #fff; border-radius: 14px; padding: 18px 20px; box-shadow: 0 4px 16px rgba(0,0,0,.08); }
+.caixa.vm { border: 3px solid var(--taronja); }
+.caixa h3 { margin: 0 0 4px; font-size: 20px; }
+.caixa .ip { font-family: Consolas, monospace; color: var(--taronja); font-weight: 700; margin-bottom: 10px; display: block; }
+.caixa li { font-size: 17px; margin-bottom: 4px; }
+.fletxa { text-align: center; font-size: 15px; color: var(--suau); font-weight: 600; }
+.fletxa b { display: block; font-size: 40px; color: var(--taronja); }
+
+/* Gantt */
+.gantt { display: grid; grid-template-columns: 300px repeat(7, 1fr); row-gap: 14px; font-size: 18px; align-items: center; }
+.gantt .dia { font-weight: 700; color: var(--suau); text-align: center; font-size: 16px; }
+.gantt .barra { height: 22px; border-radius: 6px; background: var(--degradat); }
+.gantt .barra.prev { background: repeating-linear-gradient(45deg, #d7d9de, #d7d9de 6px, #e8e9ec 6px, #e8e9ec 12px); height: 10px; }
+.gantt .barra.pend { background: var(--fosc); }
+.llegenda { display: flex; gap: 24px; font-size: 16px; color: var(--suau); margin-top: 12px; }
+.llegenda i { display: inline-block; width: 26px; height: 10px; border-radius: 4px; vertical-align: middle; margin-right: 6px; }
+
+.demo-pas { display: flex; gap: 16px; align-items: flex-start; margin-bottom: 26px; }
+.demo-pas .n { flex: none; width: 38px; height: 38px; border-radius: 50%; background: var(--degradat); color: var(--fosc);
+               font-weight: 800; display: grid; place-items: center; font-size: 17px; }
+.demo-pas strong { display: block; font-size: 22px; }
+.demo-pas span { font-size: 18px; color: #c3c6cf; }
+</style>
+</head>
+<body>
+
+<!-- 1 · Portada -->
+<section class="slide fosca portada">
+  <span class="qui">Carlos</span>
+  <img class="logo" src="../../../app_php/public/img/logo-horizontal.png" alt="CSJ Parkings">
+  <h1>Reserva la teva plaça als<br><span style="color:var(--groc)">pàrquings de Tarragona</span></h1>
+  <p class="sub" style="font-size:22px;margin:0">Sprint 2 · Implementació — Projecte ASIX2 (mòdul 0379)</p>
+  <div class="equip">
+    <div><strong>Carlos Xavier</strong><span>Coordinació i infraestructura</span></div>
+    <div><strong>Sara Pulido</strong><span>Aplicació i base de dades</span></div>
+    <div><strong>Joel Zurita</strong><span>Dades, proves i documentació</span></div>
+  </div>
+  <div class="peu"><span>21 de novembre de 2026</span><span>https://csjparkings.local</span></div>
+</section>
+
+<!-- 2 · Què hem fet -->
+<section class="slide">
+  <span class="qui">Carlos</span>
+  <h2>Què hem fet en aquest sprint</h2>
+  <p class="sub">De l'anàlisi i el disseny (Sprint 1) a una aplicació que funciona en servidors reals</p>
+  <div class="cos c4" style="flex:none;margin-bottom:22px">
+    <div class="targeta"><div class="xifra">2</div><p>màquines virtuals<br>Ubuntu Server 22.04</p></div>
+    <div class="targeta"><div class="xifra">14</div><p>pàrquings reals de Tarragona<br>i 323 places</p></div>
+    <div class="targeta"><div class="xifra">3</div><p>rols: client, operador<br>i administrador</p></div>
+    <div class="targeta"><div class="xifra">18<small>/18</small></div><p>proves funcionals<br>superades</p></div>
+  </div>
+  <div class="cos c3">
+    <div class="targeta"><h3>Infraestructura</h3><p>RAID 1, Apache + PHP, MariaDB + phpMyAdmin, HTTPS, tallafocs, còpies completes i incrementals, monitoratge.</p></div>
+    <div class="targeta"><h3>Aplicació PHP</h3><p>Registre, perfil, vehicles, pagaments, reserva amb preu automàtic + 10 %, PDF, panel d'administració i lector de matrícules.</p></div>
+    <div class="targeta"><h3>Documentació</h3><p>Instal·lació, codi, model E/R, manual d'usuari amb captures, planificació i bibliografia.</p></div>
+  </div>
+  <div class="peu"><span>CSJ Parkings · Sprint 2</span><span>2</span></div>
+</section>
+
+<!-- 3 · Arquitectura -->
+<section class="slide">
+  <span class="qui">Carlos</span>
+  <h2>Arquitectura</h2>
+  <p class="sub">Dos servidors separats: si cau el servidor web, el de monitoratge ho detecta i hi conserva les còpies</p>
+  <div class="arq">
+    <div class="caixa">
+      <h3>💻 Usuari</h3>
+      <ul><li>Navegador (ordinador o mòbil)</li><li><code>csjparkings.local</code></li><li>Confia en la CA pròpia</li></ul>
+    </div>
+    <div class="fletxa"><b>⇄</b>HTTPS 443<br>(HTTP → HTTPS)</div>
+    <div class="caixa vm">
+      <h3>parking-srv</h3><span class="ip">192.168.56.30 · 2 CPU · 1,5 GB</span>
+      <ul>
+        <li><b>RAID 1</b> (mdadm) a <code>/srv</code></li>
+        <li>Apache 2.4 + <b>PHP 8.1</b></li>
+        <li><b>MariaDB 10.6</b> + phpMyAdmin</li>
+        <li>UFW · fail2ban · SSH amb clau</li>
+        <li>Còpies programades (cron)</li>
+      </ul>
+    </div>
+    <div class="fletxa"><b>⇄</b>Mètriques i còpies<br>(només entre servidors)</div>
+    <div class="caixa vm">
+      <h3>parking-mon</h3><span class="ip">192.168.56.31 · 1 CPU · 1 GB</span>
+      <ul>
+        <li><b>Prometheus</b> + <b>Grafana</b></li>
+        <li>7 alertes</li>
+        <li>Destí de les còpies</li>
+        <li>UFW · fail2ban</li>
+      </ul>
+    </div>
+  </div>
+  <div class="peu"><span>VirtualBox · xarxa sols amfitrió 192.168.56.0/24</span><span>3</span></div>
+</section>
+
+<!-- 4 · RAID, HTTPS -->
+<section class="slide">
+  <span class="qui">Carlos</span>
+  <h2>RAID 1 i HTTPS</h2>
+  <p class="sub">Hem provat que el RAID aguanta la fallada d'un disc i que la web només funciona per HTTPS</p>
+  <div class="cos c-55-45">
+    <div class="marc"><div class="img"><img class="capt" src="../img/raid-04-fallada-disc.jpg" alt=""></div><div class="peu-img">Prova: fallada d'un disc — el RAID continua funcionant (estat degradat)</div></div>
+    <div style="display:flex;flex-direction:column;gap:16px;min-height:0">
+      <div class="targeta"><h3>RAID 1 amb mdadm</h3><ul>
+        <li>2 discos en mirall: si se'n trenca un, no es perd res</li>
+        <li>Provat: fallada → substitució → reconstrucció</li></ul></div>
+      <div class="targeta"><h3>HTTPS amb CA pròpia</h3><ul>
+        <li>Xarxa privada: Let's Encrypt no és possible</li>
+        <li>Creem la nostra autoritat i la instal·lem al Windows</li>
+        <li>Capçaleres de seguretat (HSTS, X-Frame-Options…)</li></ul></div>
+    </div>
+  </div>
+  <div class="peu"><span>Infraestructura</span><span>4</span></div>
+</section>
+
+<!-- 5 · Seguretat, còpies, monitoratge -->
+<section class="slide">
+  <span class="qui">Carlos</span>
+  <h2>Seguretat, còpies i monitoratge</h2>
+  <p class="sub">Defensa en capes: si una falla, la següent continua protegint</p>
+  <div class="cos c-40-60">
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="targeta"><h3>🔒 Seguretat</h3><p>UFW · fail2ban · SSH només amb clau · BD de l'app <b>sense DELETE</b> · Apache només llegeix el codi</p></div>
+      <div class="targeta"><h3>💾 Còpies</h3><p><b>Completa</b> setmanal i <b>incremental</b> diària (binary logs), enviades a parking-mon. Restauració provada.</p></div>
+      <div class="targeta"><h3>📈 Monitoratge</h3><p>Prometheus + Grafana · 7 alertes (web, BD, RAID, disc…)</p></div>
+    </div>
+    <div class="marc"><div class="img"><img class="capt" src="../img/mon-15-grafana-tauler.png" alt=""></div><div class="peu-img">Tauler de Grafana de la infraestructura (parking-mon)</div></div>
+  </div>
+  <div class="peu"><span>Infraestructura</span><span>5</span></div>
+</section>
+
+<!-- 6 · Model E/R -->
+<section class="slide">
+  <span class="qui">Sara</span>
+  <h2>Model de dades actualitzat</h2>
+  <p class="sub">MariaDB · 10 taules + 2 vistes · el model del Sprint 1 corregit per complir el Sprint 2</p>
+  <div class="cos c2">
+    <div class="targeta"><h3>Taules principals</h3>
+      <table>
+        <tr><td><code>usuaris</code></td><td>amb <b>rol</b>: client / operador / admin</td></tr>
+        <tr><td><code>vehicles</code></td><td>matrícula única, marca, model…</td></tr>
+        <tr><td><code>metodes_pagament</code></td><td>només els 4 últims dígits</td></tr>
+        <tr><td><code>parquings</code> · <code>places</code> · <code>tarifes</code></td><td>dades reals i preus a la BD</td></tr>
+        <tr><td><code>reserves</code></td><td>número, franja, preu, estat</td></tr>
+        <tr><td><code>pagaments</code></td><td>1:N — reserva, excés, reemborsament</td></tr>
+        <tr><td><code>accessos</code> · <code>historial_reserves</code></td><td>lector i auditoria</td></tr>
+      </table></div>
+    <div class="targeta"><h3>Decisions importants</h3><ul>
+      <li><b>Les reserves no s'esborren mai</b>: es cancel·len (esborrat lògic) i cada canvi queda a l'historial</li>
+      <li>Pagaments <b>1:N</b>: l'excés es cobra com un segon pagament de la mateixa reserva</li>
+      <li>Dates amb <b>DATETIME</b>: permet reserves nocturnes (22:30 → 00:30)</li>
+      <li>Telèfon i DNI <b>xifrats</b> (AES-256)</li></ul></div>
+  </div>
+  <div class="peu"><span>Base de dades</span><span>6</span></div>
+</section>
+
+<!-- 7 · Aplicació i seguretat -->
+<section class="slide">
+  <span class="qui">Sara</span>
+  <h2>L'aplicació: PHP sense framework (MVC)</h2>
+  <p class="sub">Codi petit i entenedor, i seguretat aplicada a cada capa</p>
+  <div class="cos c2">
+    <div class="targeta"><h3>Com està organitzada</h3><ul>
+      <li><code>public/index.php</code>: totes les peticions entren per aquí</li>
+      <li><b>Router</b> → <b>Controlador</b> → <b>Model</b> (SQL) → <b>Vista</b> (HTML)</li>
+      <li>Serveis: càlcul del preu, lector de matrícules, PDF</li>
+      <li>Configuració i contrasenyes fora de la carpeta pública</li></ul></div>
+    <div class="targeta"><h3>Seguretat de l'aplicació</h3>
+      <table>
+        <tr><td>Injecció SQL</td><td>sentències preparades (PDO)</td></tr>
+        <tr><td>XSS</td><td><code>htmlspecialchars</code> a tota la sortida</td></tr>
+        <tr><td>CSRF</td><td>token a tots els formularis</td></tr>
+        <tr><td>Contrasenyes</td><td>bcrypt · bloqueig després de 5 intents</td></tr>
+        <tr><td>Sessió</td><td>galeta Secure, HttpOnly, SameSite · 30 min</td></tr>
+        <tr><td>Dades sensibles</td><td>AES-256-GCM · targetes: 4 dígits</td></tr>
+        <tr><td>Permisos</td><td>rol + propietari de cada reserva</td></tr>
+      </table></div>
+  </div>
+  <div class="peu"><span>Aplicació</span><span>7</span></div>
+</section>
+
+<!-- 8 · Reserva i preu -->
+<section class="slide">
+  <span class="qui">Sara</span>
+  <h2>La reserva i el càlcul del preu</h2>
+  <p class="sub">Vista prèvia instantània al navegador · el preu definitiu el calcula sempre el servidor</p>
+  <div class="cos c-55-45">
+    <div class="marc"><div class="img"><img class="capt" src="../img/man-05-nova-reserva.jpg" alt=""></div><div class="peu-img">Formulari de reserva amb places lliures i preu en temps real</div></div>
+    <div class="targeta"><h3>Tarifes (taula <code>tarifes</code>)</h3>
+      <table>
+        <tr><td>1a i 2a hora</td><td><b>1,90 €/h</b></td></tr>
+        <tr><td>A partir de la 3a</td><td><b>0,20 €/h</b></td></tr>
+        <tr><td>Nocturna (22–6 h)</td><td><b>0,60 €/h</b></td></tr>
+        <tr><td>Màxim diari</td><td><b>4,00 €</b></td></tr>
+        <tr><td>Despeses de gestió</td><td><b>+10 %</b></td></tr>
+      </table>
+      <p style="margin-top:14px"><b>Exemple</b> 10:00 → 13:00<br>1,90 + 1,90 + 0,20 = 4,00 € + 0,40 € = <b style="font-size:20px">4,40 €</b></p>
+      <p style="margin-top:10px;color:var(--suau)">La reserva es fa en una <b>transacció</b>: dues persones no poden agafar l'última plaça alhora.</p></div>
+  </div>
+  <div class="peu"><span>Aplicació</span><span>8</span></div>
+</section>
+
+<!-- 9 · Número i PDF -->
+<section class="slide">
+  <span class="qui">Sara</span>
+  <h2>Número de reserva i justificant PDF</h2>
+  <p class="sub">El client rep un número únic i un PDF amb codi de barres per entrar al pàrquing</p>
+  <div class="cos c2">
+    <div class="marc"><div class="img"><img class="capt" src="../img/man-06-reserva-confirmada.jpg" alt=""></div><div class="peu-img">Reserva confirmada</div></div>
+    <div class="marc"><div class="img"><img class="capt" src="../img/man-07-pdf.png" alt="" style="object-position:center top"></div><div class="peu-img">Justificant generat amb FPDF</div></div>
+  </div>
+  <p style="margin:14px 0 0;font-size:16px">Format <code>CSJ-AAAAMMDD-XXXXXX</code> · 6 caràcters aleatoris sense 0/O ni 1/I per evitar confusions · només el titular, l'operador del pàrquing i l'administrador el poden veure.</p>
+  <div class="peu"><span>Aplicació</span><span>9</span></div>
+</section>
+
+<!-- 10 · Lector de matrícules -->
+<section class="slide">
+  <span class="qui">Carlos</span>
+  <h2>Operador: simulador del lector de matrícules</h2>
+  <p class="sub">La càmera llegeix la matrícula i l'aplicació decideix si obre la barrera</p>
+  <div class="cos c-55-45">
+    <div class="marc"><div class="img"><img class="capt" src="../img/man-09-lector.jpg" alt=""></div><div class="peu-img">Entrada de <span class="matricula">1234ABC</span> amb reserva: barrera oberta</div></div>
+    <div class="targeta"><h3>Què comprova</h3><ul>
+      <li><b>Entrada:</b> reserva vigent (fins a 30 min abans) → obre i passa a <i>en curs</i></li>
+      <li>Massa d'hora → denegat, amb l'hora a partir de la qual pot entrar</li>
+      <li>Sense reserva → només si queden places de rotació</li>
+      <li><b>Sortida tard</b> (5 min de cortesia) → cobra l'excés <b>amb el mateix mètode de pagament</b></li>
+      <li>Tot queda registrat a <code>accessos</code></li></ul></div>
+  </div>
+  <div class="peu"><span>Aplicació</span><span>10</span></div>
+</section>
+
+<!-- 11 · Administració -->
+<section class="slide">
+  <span class="qui">Sara</span>
+  <h2>Administració</h2>
+  <p class="sub">Gestió de pàrquings, places, tarifes, usuaris i totes les reserves</p>
+  <div class="cos c2">
+    <div class="marc"><div class="img"><img class="capt" src="../img/man-11-admin-reserves.jpg" alt=""></div><div class="peu-img">Cerca avançada: número, client, email, matrícula, pàrquing, estat i dates</div></div>
+    <div class="marc"><div class="img"><img class="capt" src="../img/man-12-admin-reserva.jpg" alt=""></div><div class="peu-img">Canvi d'estat i modificació (recalcula el preu)</div></div>
+  </div>
+  <p style="margin:14px 0 0;font-size:16px">⚠️ L'enunciat diu que les reserves <b>no es poden eliminar</b>: «Cancel·lar» és un <b>esborrat lògic</b>, amb reemborsament i registre a l'historial. Ni tan sols l'usuari de BD de l'aplicació té permís <code>DELETE</code>.</p>
+  <div class="peu"><span>Aplicació</span><span>11</span></div>
+</section>
+
+<!-- 12 · Proves -->
+<section class="slide">
+  <span class="qui">Joel</span>
+  <h2>Proves funcionals: 18 de 18 superades</h2>
+  <p class="sub">Hem provat tant el que ha de funcionar com el que <b>no</b> s'ha de poder fer</p>
+  <div class="cos c2">
+    <div class="targeta"><h3>Funcionalitat</h3>
+      <table>
+        <tr><td>Preus (4 franges, nocturna i màxim diari)</td><td class="ok">✅</td></tr>
+        <tr><td>Reserva sense condicions / en el passat</td><td class="ok">✅ rebutjada</td></tr>
+        <tr><td>Mateix vehicle, reserves solapades</td><td class="ok">✅ rebutjada</td></tr>
+        <tr><td>Cancel·lació: reemborsament i historial</td><td class="ok">✅</td></tr>
+        <tr><td>Lector: entrada, massa d'hora, excés</td><td class="ok">✅</td></tr>
+        <tr><td>Cerca avançada de l'administrador</td><td class="ok">✅</td></tr>
+      </table></div>
+    <div class="targeta"><h3>Seguretat</h3>
+      <table>
+        <tr><td>5 contrasenyes errònies → bloqueig 15 min</td><td class="ok">✅</td></tr>
+        <tr><td>Client entra a /admin → 403</td><td class="ok">✅</td></tr>
+        <tr><td>Reserva d'un altre usuari → 404</td><td class="ok">✅</td></tr>
+        <tr><td>Formulari sense token CSRF → 403</td><td class="ok">✅</td></tr>
+        <tr><td><code>&lt;b&gt;XSS&lt;/b&gt;</code> al nom → es mostra com a text</td><td class="ok">✅</td></tr>
+        <tr><td>Telèfon i DNI a la BD → xifrats</td><td class="ok">✅</td></tr>
+      </table></div>
+  </div>
+  <div class="peu"><span>Proves</span><span>12</span></div>
+</section>
+
+<!-- 13 · Planificació -->
+<section class="slide">
+  <span class="qui">Joel</span>
+  <h2>Planificació: previst i real</h2>
+  <p class="sub">L'aplicació es va acabar dos dies abans del previst, i això ens va donar temps per a proves i documentació</p>
+  <div class="targeta" style="flex:1">
+    <div class="gantt">
+      <div></div><div class="dia">dg 15</div><div class="dia">dl 16</div><div class="dia">dt 17</div><div class="dia">dc 18</div><div class="dia">dj 19</div><div class="dia">dv 20</div><div class="dia">ds 21</div>
+
+      <div style="grid-column:1">VM, RAID, LAMP, SSL</div><div class="barra" style="grid-column:2/5"></div>
+      <div style="grid-column:1">Còpies i monitoratge</div><div class="barra" style="grid-column:4/5"></div>
+      <div style="grid-column:1">Model E/R i dades reals</div><div class="barra" style="grid-column:3/6"></div>
+      <div style="grid-column:1">Aplicació PHP · <i>previst</i></div><div class="barra prev" style="grid-column:3/8"></div>
+      <div style="grid-column:1">Aplicació PHP · <b>real</b></div><div class="barra" style="grid-column:4/6"></div>
+      <div style="grid-column:1">Lector de matrícules</div><div class="barra" style="grid-column:4/6"></div>
+      <div style="grid-column:1">Proves, manual, bibliografia</div><div class="barra" style="grid-column:5/6"></div>
+      <div style="grid-column:1">Presentació i assaig</div><div class="barra pend" style="grid-column:6/8"></div>
+      <div style="grid-column:1">Lliurament</div><div style="grid-column:8/9;text-align:center;font-size:26px;color:var(--taronja)">◆</div>
+    </div>
+    <div class="llegenda"><span><i style="background:linear-gradient(120deg,#ffc400,#ff7a1a)"></i>fet</span><span><i style="background:#d7d9de"></i>previst inicialment</span><span><i style="background:#15171c"></i>en curs</span></div>
+  </div>
+  <div class="peu"><span>Planificació</span><span>13</span></div>
+</section>
+
+<!-- 14 · Demo -->
+<section class="slide fosca">
+  <span class="qui">Tots</span>
+  <h2>Demostració en directe</h2>
+  <p class="sub">https://csjparkings.local</p>
+  <div class="cos c2" style="align-content:start">
+    <div>
+      <div class="demo-pas"><div class="n">1</div><div><strong>Client</strong><span>Inici, places lliures i preu en temps real · nova reserva · PDF</span></div></div>
+      <div class="demo-pas"><div class="n">2</div><div><strong>Operador</strong><span>Entrada pel lector de matrícules · barrera oberta</span></div></div>
+      <div class="demo-pas"><div class="n">3</div><div><strong>Operador</strong><span>Sortida amb retard (hora simulada) · cobrament de l'excés</span></div></div>
+      <div class="demo-pas"><div class="n">4</div><div><strong>Administrador</strong><span>Cerca de la reserva · historial amb tots els canvis</span></div></div>
+    </div>
+    <div class="targeta"><h3>Usuaris de demostració</h3>
+      <p style="line-height:2"><code>client@csjparkings.cat</code><br><code>operador@csjparkings.cat</code><br><code>admin@csjparkings.cat</code></p>
+      <p style="margin-top:12px;color:#c3c6cf">Matrícula de proves: <span class="matricula">1234ABC</span></p></div>
+  </div>
+  <div class="peu"><span>Demo</span><span>14</span></div>
+</section>
+
+<!-- 15 · Conclusions -->
+<section class="slide">
+  <span class="qui">Joel</span>
+  <h2>Conclusions i properes passes</h2>
+  <p class="sub">Tot el que és obligatori del Sprint 2 està fet i provat</p>
+  <div class="cos c2">
+    <div class="targeta"><h3>✅ Aconseguit</h3><ul>
+      <li>Infraestructura completa amb RAID, HTTPS, còpies i monitoratge en un servidor a part</li>
+      <li>Aplicació funcional amb 3 rols i dades reals de Tarragona</li>
+      <li>Simulador del lector amb cobrament de l'excés</li>
+      <li>Seguretat provada: 18/18 proves</li></ul></div>
+    <div class="targeta"><h3>🔜 Millores possibles</h3><ul>
+      <li>Segon servidor web + balanceig (HAProxy) a l'equip de l'institut</li>
+      <li>Passarel·la de pagament real (mode proves)</li>
+      <li>Càmera real amb reconeixement de matrícules</li>
+      <li>Enviament del PDF per correu electrònic</li></ul></div>
+  </div>
+  <div class="peu"><span>Conclusions</span><span>15</span></div>
+</section>
+
+<!-- 16 · Gràcies -->
+<section class="slide fosca portada" style="align-items:center;text-align:center">
+  <img class="logo" src="../../../app_php/public/img/logo-horizontal.png" alt="CSJ Parkings" style="margin-bottom:30px">
+  <h1 style="font-size:60px">Gràcies!</h1>
+  <p class="sub" style="font-size:24px">Preguntes?</p>
+  <div class="peu"><span>Carlos Xavier · Sara Pulido · Joel Zurita</span><span>github.com/carlosxavierx/parkingcsj</span></div>
+</section>
+
+</body>
+</html>
