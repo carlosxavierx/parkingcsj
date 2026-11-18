@@ -392,6 +392,24 @@ public static function hash(string $text): string
 
 - A la pantalla, les dades es mostren **emmascarades** (`•••••678Z`) amb `Crypto::mask()`.
 
+**Comprovació a la base de dades.** El client demo té el telèfon `600123456` i el DNI `87654321X` (dades fictícies).
+A la web es veuen normals, però a la taula `usuaris` només hi ha el text xifrat i el hash:
+
+```text
+$ sudo mariadb csj_parkings -e 'SELECT email, telefon_xifrat, dni_xifrat, LEFT(dni_hash,16) AS dni_hash
+                                FROM usuaris WHERE telefon_xifrat IS NOT NULL OR dni_xifrat IS NOT NULL'
++------------------------+------------------------------------------------------+------------------------------------------------------+------------------+
+| email                  | telefon_xifrat                                       | dni_xifrat                                           | dni_hash         |
++------------------------+------------------------------------------------------+------------------------------------------------------+------------------+
+| client@csjparkings.cat | RgCkOXZjCcZRSknpHh57tK/Ipn9Qui/X+IEj7saOJLvdzhALDA== | ktqCa1dJBlzG5JwX5GnSeQiAN+RsMdh0H5xmc6n7FQNQfEiLjA== | 8b491be9f356178d |
+| prova11209@exemple.cat | crikkXipVE4vIBGhj2hDd7lBvfeAQhqGLsHad9RmToXdMtYboQ== | FN88d9B31rfmaBxEZXOm2Zyu31QNNWjSDIIKpI2BzRPmsLFHUg== | 323d3a68ee714654 |
++------------------------+------------------------------------------------------+------------------------------------------------------+------------------+
+```
+
+Quan es va intentar posar al client un DNI que ja tenia un altre usuari, l'aplicació el va rebutjar
+(*"Aquest DNI/NIE ja està registrat en un altre compte"*): el duplicat es detecta comparant el `dni_hash`,
+sense desxifrar cap DNI.
+
 ### 5.6 Mètodes de pagament
 
 El pagament és **simulat** (no hi ha passarel·la real), però es fa com es faria en un sistema real:
@@ -734,22 +752,22 @@ Proves manuals fetes amb els usuaris de demostració (`admin@`, `operador@` i `c
 |---|---|---|---|
 | 1 | Registre amb DNI amb lletra incorrecta (`12345678A`) | Error "El DNI/NIE no és vàlid" | ✅ |
 | 2 | Registre amb contrasenya `12345678` | Error de complexitat | ✅ |
-| 3 | 5 intents d'inici de sessió fallits | Compte bloquejat 15 minuts | ☐ |
-| 4 | Reserva sense acceptar les condicions | No es crea; missatge d'error | ☐ |
+| 3 | 5 intents d'inici de sessió fallits | Compte bloquejat 15 minuts | ✅ |
+| 4 | Reserva sense acceptar les condicions | No es crea; missatge d'error | ✅ |
 | 5 | Preu de 10:00 a 13:00 · 10:00 a 11:30 · 22:30 a 00:30 · 08:00 a 20:00 | 4,40 € · 3,14 € · 1,32 € · 4,40 € (taula de l'apartat 6.3) | ✅ |
-| 6 | Entrada en el passat o sortida abans de l'entrada | Error de validació | ☐ |
-| 7 | Mateix vehicle, dues reserves solapades | Error "ja té la reserva ..." | ☐ |
-| 8 | Descarregar el PDF | PDF amb número i codi de barres | ☐ |
-| 9 | Client accedeix a `/reserves/{id}` d'un altre usuari | 404 | ☐ |
+| 6 | Entrada en el passat o sortida abans de l'entrada | Error de validació | ✅ |
+| 7 | Mateix vehicle, dues reserves solapades | Error "ja té la reserva ..." | ✅ |
+| 8 | Descarregar el PDF | PDF amb número i codi de barres | ✅ |
+| 9 | Client accedeix a `/reserves/{id}` d'un altre usuari | 404 | ✅ |
 | 10 | Client accedeix a `/admin` i a `/operador` | 403 Accés denegat | ✅ |
 | 11 | Formulari enviat sense token CSRF | 403 Sessió caducada | ✅ |
-| 12 | Nom amb `<script>alert(1)</script>` | Es mostra com a text | ☐ |
-| 13 | Cancel·lar una reserva | Estat cancel·lada, reemborsament, historial; la fila continua a la BD | ☐ |
-| 14 | Lector: entrada amb reserva vigent | Barrera oberta, reserva en curs | ☐ |
-| 15 | Lector: entrada massa d'hora | Denegat amb l'hora a partir de la qual pot entrar | ☐ |
-| 16 | Lector: sortida 1 h tard (hora simulada) | Es cobra l'excés amb el mateix mètode, reserva completada | ☐ |
+| 12 | Nom amb `<script>alert(1)</script>` | Es mostra com a text | ✅ |
+| 13 | Cancel·lar una reserva | Estat cancel·lada, reemborsament, historial; la fila continua a la BD | ✅ |
+| 14 | Lector: entrada amb reserva vigent | Barrera oberta, reserva en curs | ✅ |
+| 15 | Lector: entrada massa d'hora | Denegat amb l'hora a partir de la qual pot entrar | ✅ |
+| 16 | Lector: sortida 1 h tard (hora simulada) | Es cobra l'excés amb el mateix mètode, reserva completada | ✅ |
 | 17 | Admin: cerca per matrícula `1234ABC` i estat confirmada | Només les reserves que compleixen els filtres | ✅ |
-| 18 | Telèfon i DNI a phpMyAdmin | Es veuen xifrats (base64), no en clar | ☐ |
+| 18 | Telèfon i DNI consultats directament a la BD (`SELECT` amb el client `mariadb`) | Es veuen xifrats (base64), no en clar | ✅ |
 
 ---
 
