@@ -14,10 +14,11 @@ try {
     <meta name="csrf-token" content="<?= e(App\Core\Csrf::token()) ?>">
     <title><?= e($titol ?? 'CSJ Parkings') ?> · CSJ Parkings</title>
     <link rel="icon" type="image/png" href="/img/favicon.png">
+    <meta name="theme-color" content="#101014">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&display=swap">
-    <link rel="stylesheet" href="/css/app.css?v=3">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Titillium+Web:ital,wght@0,400;0,600;0,700;0,900;1,700;1,900&display=swap">
+    <link rel="stylesheet" href="/css/app.css?v=4">
     <?php if (!empty($mapa)): ?>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     <?php endif; ?>
@@ -118,6 +119,6 @@ try {
 <?php if (!empty($mapa)): ?>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <?php endif; ?>
-<script src="/js/app.js?v=1"></script>
+<script src="/js/app.js?v=2"></script>
 </body>
 </html>
