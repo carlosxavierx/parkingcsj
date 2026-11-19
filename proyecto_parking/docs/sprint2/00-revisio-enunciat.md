@@ -85,4 +85,4 @@ Llegenda: ✅ fet · 🔧 en curs / planificat al Sprint 2 · ⏳ fase posterior
 6. **Planificació.** Està pensada per a 4 membres i 10 setmanes amb PHP.
    → Actualitzada a 3 membres i al calendari real (veure `03-planificacio-actualitzada.md`).
 7. **Carpeta `app/` (React + Firebase).** No compleix l'stack de l'enunciat (Apache2 + PHP + MariaDB).
-   → Es manté com a prototip de disseny i es reaprofiten les dades reals dels pàrquings i l'aspecte visual; l'aplicació que es lliura és la PHP.
+   → Se'n van reaprofitar les dades reals dels pàrquings i els logotips; l'aplicació que es lliura és la PHP. El prototip es va retirar del repositori en acabar el Sprint 2 (queda a l'historial de git).

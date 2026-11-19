@@ -109,8 +109,8 @@ if (mapa && window.L) {
     }).addTo(m);
     const limits = [];
     parquings.forEach((p) => {
-        const color = p.lliures > 5 ? '#43a047' : (p.lliures > 0 ? '#f0a000' : '#c62828');
-        const marcador = L.circleMarker([p.lat, p.lng], { radius: 10, color: '#15171c', weight: 2, fillColor: color, fillOpacity: .95 }).addTo(m);
+        const color = p.lliures > 5 ? '#00a650' : (p.lliures > 0 ? '#ffc400' : '#e10600');
+        const marcador = L.circleMarker([p.lat, p.lng], { radius: 10, color: '#101014', weight: 2, fillColor: color, fillOpacity: .95 }).addTo(m);
         const div = document.createElement('div');
         const titol = document.createElement('strong'); titol.textContent = p.nom;
         const info = document.createElement('div'); info.textContent = `${p.adreca} · ${p.lliures} places lliures`;

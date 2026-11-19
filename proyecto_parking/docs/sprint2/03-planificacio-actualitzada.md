@@ -15,7 +15,7 @@
 | Equip de 4 membres | Equip de **3 membres** | Composició real del grup |
 | 10 setmanes, S2–S9 seqüencials | El **Sprint 2 de l'enunciat** agrupa infraestructura, BD, backend, frontend i documentació en una sola setmana | Calendari de lliuraments del curs |
 | Stack PHP + MariaDB | Es manté | Requisit de l'enunciat |
-| Prototip React + Firebase (`app/`) | Es manté només com a referència de disseny i dades | No compleix l'stack demanat |
+| Prototip React + Firebase (`app/`) | Només referència de disseny i dades; retirat del repositori en acabar el Sprint 2 | No compleix l'stack demanat |
 | `clients.es_admin` | Rols `client`, `operador`, `admin` | El Sprint 2 demana diversos rols |
 | Pagament 1:1 | Mètodes de pagament de l'usuari i pagaments 1:N | Objectius 2.4 i cobrament d'excés |
 

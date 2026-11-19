@@ -1,0 +1,13 @@
+# Fitxers locals de l'entorn de treball (no formen part del projecte)
+CLAUDE.md
+CLAUDE.local.md
+.claude/
+.vscode/
+
+# Configuració amb contrasenyes reals (només es puja la plantilla config.example.php)
+proyecto_parking/app_php/config/config.php
+
+# Fitxers temporals del sistema
+Thumbs.db
+desktop.ini
+.DS_Store
