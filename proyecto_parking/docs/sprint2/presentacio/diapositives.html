@@ -5,101 +5,135 @@
 <title>CSJ Parkings · Sprint 2</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Titillium+Web:ital,wght@0,400;0,600;0,700;0,900;1,700;1,900&display=swap">
 <style>
+/* Tema "curses" (F1), el mateix que l'aplicació: negre carboni + vermell de competició + bandera a quadres */
 :root {
-  --fosc: #15171c; --fosc-2: #23262e; --groc: #ffc400; --taronja: #ff7a1a;
-  --degradat: linear-gradient(120deg, #ffc400, #ff7a1a);
-  --fons: #f5f5f7; --text: #1d1f24; --suau: #6b6f7a; --vora: #e2e3e8;
-  --ok: #2e7d32; --ok-fons: #e8f5e9;
+  --fosc: #101014; --fosc-2: #1d1d25; --fosc-3: #2a2a35;
+  --vermell: #e10600; --vermell-fosc: #b00500; --vermell-clar: #ff3b1f;
+  --groc: #ffc400; --taronja: #ff7a1a;
+  --degradat: linear-gradient(100deg, #e10600 0%, #ff3b1f 100%);
+  --fons: #f2f2f4; --text: #15151e; --suau: #5f6170; --vora: #dcdce2; --clar: #c9cad3;
+  --ok: #00a650; --ok-fons: #e3f6ec;
+  --quadres: repeating-conic-gradient(#fff 0 25%, #101014 0 50%);
+  --carboni:
+      linear-gradient(27deg, #15151c 5px, transparent 5px) 0 5px,
+      linear-gradient(207deg, #15151c 5px, transparent 5px) 10px 0,
+      linear-gradient(27deg, #1b1b23 5px, transparent 5px) 0 10px,
+      linear-gradient(207deg, #1b1b23 5px, transparent 5px) 10px 5px,
+      linear-gradient(90deg, #17171e 10px, transparent 10px),
+      linear-gradient(#18181f 25%, #16161d 25%, #16161d 50%, transparent 50%, transparent 75%, #1a1a22 75%, #1a1a22);
+  --paral: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+  --tall: polygon(0 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%);
 }
 @page { size: 1280px 720px; margin: 0; }
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; background: #888; }
-body { font-family: Montserrat, "Segoe UI", Arial, sans-serif; color: var(--text);
+body { font-family: "Titillium Web", "Segoe UI", Arial, sans-serif; color: var(--text);
        -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 .slide { width: 1280px; height: 720px; position: relative; overflow: hidden; background: var(--fons);
          padding: 56px 72px 64px; display: flex; flex-direction: column; margin: 0 auto 24px;
          page-break-after: always; break-after: page; }
 @media print { body { background: none; } .slide { margin: 0; } }
-.slide.fosca { background: var(--fosc); color: #fff; }
-.slide::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 6px; background: var(--degradat); }
+.slide.fosca { background: var(--carboni); background-color: var(--fosc); background-size: 20px 20px; color: #fff; }
+/* Franja inferior: vermell + bandera a quadres */
+.slide::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 8px;
+                background: linear-gradient(90deg, var(--vermell) 0 72%, transparent 72%), var(--quadres);
+                background-size: auto, 8px 8px; }
+/* Tram de bandera a quadres a la cantonada superior esquerra */
+.slide::before { content: ""; position: absolute; left: 0; top: 0; width: 64px; height: 16px; background: var(--quadres);
+                 background-size: 8px 8px; clip-path: polygon(0 0, 100% 0, calc(100% - 16px) 100%, 0 100%); opacity: .85; }
 .peu { position: absolute; left: 72px; right: 72px; bottom: 20px; display: flex; justify-content: space-between;
-       font-size: 13px; color: var(--suau); }
+       font-size: 13px; color: var(--suau); font-weight: 600; text-transform: uppercase; letter-spacing: .08em; }
+.peu span:last-child { font-style: italic; font-weight: 900; font-size: 15px; color: var(--vermell); letter-spacing: 0; text-transform: none; }
 .fosca .peu { color: #9a9ea8; }
-.qui { position: absolute; top: 24px; right: 72px; font-size: 13px; font-weight: 700; padding: 5px 12px;
-       border-radius: 999px; background: var(--fosc); color: var(--groc); }
-.fosca .qui { background: var(--fosc-2); }
-h1 { font-size: 46px; line-height: 1.1; margin: 0 0 14px; font-weight: 800; }
-h2 { font-size: 36px; margin: 0 0 6px; font-weight: 800; }
-.sub { font-size: 20px; color: var(--suau); margin: 0 0 26px; }
-.fosca .sub { color: #c3c6cf; }
-.ressalt { background: var(--degradat); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.qui { position: absolute; top: 24px; right: 72px; font-size: 13px; font-weight: 700; padding: 5px 20px;
+       text-transform: uppercase; letter-spacing: .08em; background: var(--vermell); color: #fff; clip-path: var(--paral); }
+h1 { font-size: 50px; line-height: 1.05; margin: 0 0 14px; font-weight: 900; font-style: italic; text-transform: uppercase; letter-spacing: -.01em; }
+h2 { font-size: 38px; line-height: 1.1; margin: 0 0 6px; font-weight: 900; font-style: italic; text-transform: uppercase; letter-spacing: -.005em; }
+h2::before { content: ""; display: inline-block; width: 10px; height: .8em; margin-right: 16px; background: var(--vermell);
+             transform: skewX(-18deg); vertical-align: -2px; }
+.sub { font-size: 21px; color: var(--suau); margin: 0 0 26px; }
+.fosca .sub { color: var(--clar); }
+.accent { color: var(--vermell-clar); }
 .cos { flex: 1; display: grid; gap: 22px; min-height: 0; }
 .c2 { grid-template-columns: 1fr 1fr; }
 .c3 { grid-template-columns: repeat(3, 1fr); }
 .c4 { grid-template-columns: repeat(4, 1fr); }
 .c-55-45 { grid-template-columns: 1.15fr .85fr; }
 .c-40-60 { grid-template-columns: .8fr 1.2fr; }
-.targeta { background: #fff; border-radius: 14px; padding: 20px 22px; box-shadow: 0 1px 2px rgba(0,0,0,.05), 0 4px 16px rgba(0,0,0,.06);
-           border-top: 4px solid var(--taronja); }
+.targeta { background: #fff; padding: 20px 22px; box-shadow: 0 1px 2px rgba(0,0,0,.06), 0 6px 18px rgba(0,0,0,.08);
+           border-top: 4px solid var(--vermell); clip-path: var(--tall); }
 .fosca .targeta { background: var(--fosc-2); color: #fff; box-shadow: none; }
-.targeta h3 { margin: 0 0 10px; font-size: 23px; }
+.targeta h3 { margin: 0 0 10px; font-size: 23px; font-weight: 900; font-style: italic; text-transform: uppercase; letter-spacing: .01em; }
 .targeta p, .targeta li { font-size: 19px; line-height: 1.45; margin: 0 0 4px; }
-ul { margin: 0; padding-left: 20px; }
+ul { margin: 0; padding-left: 22px; }
 li { font-size: 20px; line-height: 1.45; margin-bottom: 8px; }
-li::marker { color: var(--taronja); }
-.xifra { font-size: 44px; font-weight: 800; line-height: 1; margin-bottom: 6px; }
-.xifra small { font-size: 18px; font-weight: 600; }
-img.capt { display: block; max-width: 100%; max-height: 430px; width: auto; height: auto; margin: 0 auto; border-radius: 10px;
-           box-shadow: 0 4px 18px rgba(0,0,0,.15); }
+li::marker { color: var(--vermell); content: "\25B6\00A0\00A0"; font-size: .7em; }
+/* Xifres com una pantalla de temps */
+.xifra { font-size: 52px; font-weight: 900; font-style: italic; line-height: 1; margin-bottom: 6px; color: var(--vermell);
+         font-variant-numeric: tabular-nums; }
+.xifra small { font-size: 20px; font-weight: 700; color: var(--suau); }
+img.capt { display: block; max-width: 100%; max-height: 430px; width: auto; height: auto; margin: 0 auto;
+           box-shadow: 0 6px 20px rgba(0,0,0,.18); border-top: 4px solid var(--vermell); }
 .marc { min-height: 0; display: flex; flex-direction: column; gap: 6px; }
 .marc img { min-height: 0; }
 .marc .img { flex: none; min-height: 0; display: flex; align-items: flex-start; justify-content: center; }
-.peu-img { font-size: 15px; color: var(--suau); text-align: center; }
+.peu-img { font-size: 15px; color: var(--suau); text-align: center; font-style: italic; }
 table { border-collapse: collapse; width: 100%; font-size: 18px; }
-th { text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--suau); padding: 7px 8px; border-bottom: 2px solid var(--vora); }
+th { text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--suau); padding: 7px 8px; border-bottom: 2px solid var(--fosc); }
 td { padding: 9px 8px; border-bottom: 1px solid var(--vora); vertical-align: top; }
 .ok { color: var(--ok); font-weight: 700; white-space: nowrap; text-align: right; }
-.etiqueta { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 13px; font-weight: 700; background: var(--ok-fons); color: var(--ok); }
-code, .mono { font-family: Consolas, "Courier New", monospace; }
-code { background: #eceef2; padding: 1px 6px; border-radius: 5px; font-size: .92em; }
-.fosca code { background: #2e323c; color: var(--groc); }
-.matricula { font-family: Consolas, monospace; font-weight: 700; border: 2px solid var(--fosc); border-left: 8px solid #1e4fd6; border-radius: 5px; padding: 1px 8px; background: #fff; color: var(--fosc); }
+.etiqueta { display: inline-block; padding: 3px 12px; font-size: 13px; font-weight: 700; background: var(--ok-fons); color: var(--ok); clip-path: var(--paral); }
+code, .mono { font-family: Consolas, "Cascadia Mono", "Courier New", monospace; }
+code { background: #e8e8ee; padding: 1px 6px; border-radius: 2px; font-size: .9em; }
+.fosca code { background: var(--fosc-3); color: #fff; box-shadow: inset 3px 0 0 var(--vermell); }
+.matricula { font-family: Consolas, monospace; font-weight: 700; border: 2px solid var(--fosc); border-left: 8px solid #1e4fd6; border-radius: 4px; padding: 1px 8px; background: #fff; color: var(--fosc); }
+.nota { margin: 14px 0 0; font-size: 16px; }
+.suau { color: var(--suau); }
+.fosca .suau { color: var(--clar); }
 
 /* Portada */
 .portada { justify-content: center; }
+.portada::before { left: auto; right: 0; width: 260px; height: 44px; background-size: 11px 11px;
+                   clip-path: polygon(30px 0, 100% 0, 100% 100%, 0 100%); }
 .portada .logo { width: 560px; margin-bottom: 40px; }
-.portada h1 { font-size: 54px; }
+.portada h1 { font-size: 58px; }
 .equip { display: flex; gap: 18px; margin-top: 36px; }
-.equip div { background: var(--fosc-2); border-radius: 12px; padding: 14px 20px; border-left: 4px solid var(--groc); }
-.equip strong { display: block; font-size: 18px; }
-.equip span { font-size: 14px; color: #c3c6cf; }
+.equip div { background: var(--fosc-2); padding: 14px 30px 14px 22px; border-left: 5px solid var(--vermell);
+             clip-path: polygon(0 0, 100% 0, calc(100% - 14px) 100%, 0 100%); }
+.equip strong { display: block; font-size: 19px; font-style: italic; text-transform: uppercase; }
+.equip span { font-size: 14px; color: var(--clar); }
 
 /* Arquitectura */
 .arq { display: grid; grid-template-columns: .9fr 120px 1.2fr 120px 1.1fr; gap: 12px; align-items: center; flex: 1; }
-.caixa { background: #fff; border-radius: 14px; padding: 18px 20px; box-shadow: 0 4px 16px rgba(0,0,0,.08); }
-.caixa.vm { border: 3px solid var(--taronja); }
-.caixa h3 { margin: 0 0 4px; font-size: 20px; }
-.caixa .ip { font-family: Consolas, monospace; color: var(--taronja); font-weight: 700; margin-bottom: 10px; display: block; }
+.caixa { background: #fff; padding: 18px 20px; box-shadow: 0 6px 18px rgba(0,0,0,.1); border-top: 4px solid var(--fosc); clip-path: var(--tall); }
+.caixa.vm { border-top: 6px solid var(--vermell); }
+.caixa h3 { margin: 0 0 4px; font-size: 21px; font-weight: 900; font-style: italic; text-transform: uppercase; }
+.caixa .ip { font-family: Consolas, monospace; color: var(--vermell); font-weight: 700; margin-bottom: 10px; display: block; }
 .caixa li { font-size: 17px; margin-bottom: 4px; }
-.fletxa { text-align: center; font-size: 15px; color: var(--suau); font-weight: 600; }
-.fletxa b { display: block; font-size: 40px; color: var(--taronja); }
+.fletxa { text-align: center; font-size: 15px; color: var(--suau); font-weight: 700; }
+.fletxa b { display: block; font-size: 40px; color: var(--vermell); }
 
-/* Gantt */
+/* Gantt: barres inclinades com les de l'aplicació */
 .gantt { display: grid; grid-template-columns: 300px repeat(7, 1fr); row-gap: 14px; font-size: 18px; align-items: center; }
-.gantt .dia { font-weight: 700; color: var(--suau); text-align: center; font-size: 16px; }
-.gantt .barra { height: 22px; border-radius: 6px; background: var(--degradat); }
-.gantt .barra.prev { background: repeating-linear-gradient(45deg, #d7d9de, #d7d9de 6px, #e8e9ec 6px, #e8e9ec 12px); height: 10px; }
+.gantt .dia { font-weight: 900; font-style: italic; color: var(--suau); text-align: center; font-size: 16px; text-transform: uppercase; }
+.gantt .barra { height: 22px; background: var(--degradat); transform: skewX(-20deg); }
+.gantt .barra.prev { background: repeating-linear-gradient(90deg, #c9cad3 0 10px, transparent 10px 14px); height: 10px; }
 .gantt .barra.pend { background: var(--fosc); }
+.fita { grid-column: 8/9; text-align: center; font-size: 26px; color: var(--vermell); }
 .llegenda { display: flex; gap: 24px; font-size: 16px; color: var(--suau); margin-top: 12px; }
-.llegenda i { display: inline-block; width: 26px; height: 10px; border-radius: 4px; vertical-align: middle; margin-right: 6px; }
+.llegenda i { display: inline-block; width: 26px; height: 10px; vertical-align: middle; margin-right: 8px; transform: skewX(-20deg); }
+.llegenda .l-fet { background: var(--degradat); }
+.llegenda .l-prev { background: #c9cad3; }
+.llegenda .l-pend { background: var(--fosc); }
 
-.demo-pas { display: flex; gap: 16px; align-items: flex-start; margin-bottom: 26px; }
-.demo-pas .n { flex: none; width: 38px; height: 38px; border-radius: 50%; background: var(--degradat); color: var(--fosc);
-               font-weight: 800; display: grid; place-items: center; font-size: 17px; }
-.demo-pas strong { display: block; font-size: 22px; }
-.demo-pas span { font-size: 18px; color: #c3c6cf; }
+/* Demostració: números de posició de la graella de sortida */
+.demo-pas { display: flex; gap: 18px; align-items: flex-start; margin-bottom: 26px; }
+.demo-pas .n { flex: none; width: 56px; height: 40px; background: var(--vermell); color: #fff; clip-path: var(--paral);
+               font-weight: 900; font-style: italic; display: grid; place-items: center; font-size: 22px; }
+.demo-pas strong { display: block; font-size: 23px; font-style: italic; text-transform: uppercase; }
+.demo-pas span { font-size: 18px; color: var(--clar); }
 </style>
 </head>
 <body>
@@ -108,7 +142,7 @@ code { background: #eceef2; padding: 1px 6px; border-radius: 5px; font-size: .92
 <section class="slide fosca portada">
   <span class="qui">Carlos</span>
   <img class="logo" src="../../../app_php/public/img/logo-horizontal.png" alt="CSJ Parkings">
-  <h1>Reserva la teva plaça als<br><span style="color:var(--groc)">pàrquings de Tarragona</span></h1>
+  <h1>Reserva la teva plaça als<br><span class="accent">pàrquings de Tarragona</span></h1>
   <p class="sub" style="font-size:22px;margin:0">Sprint 2 · Implementació — Projecte ASIX2 (mòdul 0379)</p>
   <div class="equip">
     <div><strong>Carlos Xavier</strong><span>Coordinació i infraestructura</span></div>
@@ -367,9 +401,9 @@ code { background: #eceef2; padding: 1px 6px; border-radius: 5px; font-size: .92
       <div style="grid-column:1">Lector de matrícules</div><div class="barra" style="grid-column:4/6"></div>
       <div style="grid-column:1">Proves, manual, bibliografia</div><div class="barra" style="grid-column:5/6"></div>
       <div style="grid-column:1">Presentació i assaig</div><div class="barra pend" style="grid-column:6/8"></div>
-      <div style="grid-column:1">Lliurament</div><div style="grid-column:8/9;text-align:center;font-size:26px;color:var(--taronja)">◆</div>
+      <div style="grid-column:1">Lliurament</div><div class="fita">🏁</div>
     </div>
-    <div class="llegenda"><span><i style="background:linear-gradient(120deg,#ffc400,#ff7a1a)"></i>fet</span><span><i style="background:#d7d9de"></i>previst inicialment</span><span><i style="background:#15171c"></i>en curs</span></div>
+    <div class="llegenda"><span><i class="l-fet"></i>fet</span><span><i class="l-prev"></i>previst inicialment</span><span><i class="l-pend"></i>en curs</span></div>
   </div>
   <div class="peu"><span>Planificació</span><span>13</span></div>
 </section>
@@ -388,7 +422,7 @@ code { background: #eceef2; padding: 1px 6px; border-radius: 5px; font-size: .92
     </div>
     <div class="targeta"><h3>Usuaris de demostració</h3>
       <p style="line-height:2"><code>client@csjparkings.cat</code><br><code>operador@csjparkings.cat</code><br><code>admin@csjparkings.cat</code></p>
-      <p style="margin-top:12px;color:#c3c6cf">Matrícula de proves: <span class="matricula">1234ABC</span></p></div>
+      <p class="suau" style="margin-top:12px">Matrícula de proves: <span class="matricula">1234ABC</span></p></div>
   </div>
   <div class="peu"><span>Demo</span><span>14</span></div>
 </section>

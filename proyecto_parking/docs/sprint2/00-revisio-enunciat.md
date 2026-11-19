@@ -64,7 +64,7 @@ Llegenda: ✅ fet · 🔧 en curs / planificat al Sprint 2 · ⏳ fase posterior
 | Model E/R actualitzat | `04-model-er-actualitzat.md` + `database/schema.sql` i `seed.sql` (provats al servidor) | ✅ |
 | Codi comentat i estructurat (PHP, HTML, CSS, JS) | `proyecto_parking/app_php/` | ✅ |
 | Enllaç o IP per provar l'aplicació | `https://csjparkings.local` · `https://192.168.56.30` (des de l'equip on corren les VM o, a la mateixa xarxa, per la IP de l'equip amfitrió) | ✅ |
-| Presentació (PDF) + document de presentació | — | 🔧 dj–dv |
+| Presentació (PDF) + document de presentació | `presentacio/CSJ-Parkings-Sprint2-diapositives.pdf` i `presentacio/CSJ-Parkings-Sprint2-guio.pdf` | ✅ |
 
 ---
 
