@@ -58,7 +58,7 @@ Format: *Autor/organització. Títol. URL (consulta: novembre de 2026).*
 32. Volodymyr Agafonkin et al. *Leaflet 1.9 — Documentation*. https://leafletjs.com/reference.html
 33. OpenStreetMap Foundation. *OpenStreetMap* i *Tile Usage Policy*. https://www.openstreetmap.org/copyright · https://operations.osmfoundation.org/policies/tiles/
 34. Geoapify. *Geocoding API* (coordenades i adreces dels pàrquings). https://www.geoapify.com/geocoding-api/
-35. Google Fonts. *Montserrat* (SIL Open Font License). https://fonts.google.com/specimen/Montserrat
+35. Google Fonts. *Titillium Web* (SIL Open Font License). https://fonts.google.com/specimen/Titillium+Web
 36. Mermaid. *Mermaid documentation* (diagrames E/R, de flux, d'estats i de Gantt). https://mermaid.js.org/
 
 ## 7. Fotografies dels pàrquings (Wikimedia Commons)

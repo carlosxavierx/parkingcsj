@@ -35,7 +35,7 @@
 | PDF | **FPDF** (paquet Ubuntu `php-fpdf`) | Llibreria lleugera, sense dependències, instal·lable amb `apt`. |
 | Mapa | **Leaflet 1.9.4** + **OpenStreetMap** | Mapa lliure i gratuït (sense clau d'API, a diferència de Google Maps). |
 | Interfície | HTML5, CSS3 (*responsive*, sense frameworks) i JavaScript (ES2020, sense jQuery) | Pàgines lleugeres; el JS només millora la usabilitat (vista prèvia del preu, mapa), l'aplicació funciona sense. |
-| Tipografia | Montserrat (Google Fonts) | Identitat visual de CSJ Parkings (Sprint 1). |
+| Tipografia | Titillium Web (Google Fonts) | Lletra condensada i llegible per al tema visual "curses" de la web. |
 | Control de versions | Git + GitHub (`carlosxavierx/parkingcsj`) | Treball en equip i historial de canvis. |
 
 ---
@@ -701,8 +701,8 @@ quantes places queden **en aquella franja**, no només ara.
 
 - **Plantilla única** (`src/Views/layout.php`): capçalera amb logotip i menú segons el rol, missatges
   (*flash*) d'èxit/error, contingut i peu de pàgina. Totes les pàgines comparteixen el mateix aspecte.
-- **CSS propi** (`public/css/app.css`): colors de la identitat del Sprint 1 (negre, groc, taronja, blanc) definits
-  com a variables CSS; *grid* i *flexbox* amb *media queries*, de manera que es veu bé en mòbil.
+- **CSS propi** (`public/css/app.css`): tema visual "curses" (negre carboni, vermell de competició i blanc, amb el
+  groc i taronja del logotip) definit amb variables CSS; bandera a quadres i textures fetes només amb CSS; *grid* i *flexbox* amb *media queries*, de manera que es veu bé en mòbil.
 - **JavaScript** (`public/js/app.js`), sense llibreries excepte Leaflet:
   - vista prèvia del preu (mateix algorisme que el servidor, apartat 6.3);
   - consulta de places lliures amb `fetch()`;

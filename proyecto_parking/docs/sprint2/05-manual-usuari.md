@@ -306,7 +306,7 @@ Fent clic al número d'una reserva s'obre la seva fitxa:
 - **Llista de pàrquings** amb el botó per crear-ne un de nou.
 - **Dades del pàrquing:** nom, tipus (subterrani, superfície, en plantes), adreça, codi postal, telèfon,
   coordenades (latitud i longitud, per al mapa), horari, places totals i reservables, descripció i serveis.
-- **Places:** es veuen totes les places. La vora taronja indica que està ocupada ara; ratllada, que està fora de servei.
+- **Places:** es veuen totes les places. La vora vermella indica que està ocupada ara; ratllada, que està fora de servei.
   Es poden **afegir places** (quantitat, tipus i planta) i canviar el tipus o l'estat d'una plaça.
   Les places no s'eliminen: es posen **fora de servei**.
 
